@@ -85,6 +85,7 @@
 <script setup lang="ts">
 import { computed, ref, onBeforeUnmount, watch } from 'vue'
 import type { DateRange, DateRangePreset } from '../types'
+import { DateAdapter } from '../utils/date-adapter'
 
 // ─── v-model ───────────────────────────────────────────────────────────────
 const selected = defineModel<DateRange>({ required: true })
@@ -96,24 +97,25 @@ const minTimestamp = new Date(currentYear, 0, 1).getTime()
 const maxTimestamp = new Date(currentYear, 11, 31).getTime()
 
 // ─── État local (tableau [startTs, endTs]) ──────────────────────────────────
-// On utilise un ref mutable plutôt qu'un computed writable pour éviter
-// les erreurs TypeScript « Cannot assign to read-only property ».
 const localValue = ref<[number, number]>([
-  selected.value?.start?.getTime() ?? minTimestamp,
-  selected.value?.end?.getTime()   ?? maxTimestamp,
+  selected.value?.start ? DateAdapter.toTimestamp(selected.value.start) : minTimestamp,
+  selected.value?.end ? DateAdapter.toTimestamp(selected.value.end) : maxTimestamp,
 ])
 
 // Synchronisation entrante : si le parent change selected, on met à jour localValue
 watch(selected, (v) => {
   localValue.value = [
-    v?.start?.getTime() ?? minTimestamp,
-    v?.end?.getTime()   ?? maxTimestamp,
+    v?.start ? DateAdapter.toTimestamp(v.start) : minTimestamp,
+    v?.end ? DateAdapter.toTimestamp(v.end) : maxTimestamp,
   ]
 }, { deep: true })
 
 // Synchronisation sortante : quand localValue change, on émet vers le parent
 watch(localValue, ([s, e]) => {
-  selected.value = { start: new Date(s), end: new Date(e) }
+  selected.value = { 
+    start: DateAdapter.fromTimestamp(s), 
+    end: DateAdapter.fromTimestamp(e) 
+  }
 }, { deep: true })
 
 // ─── Positions en % sur la piste ───────────────────────────────────────────
@@ -191,28 +193,15 @@ watch(localValue, (newVal) => {
 
 // ─── Formatage ──────────────────────────────────────────────────────────────
 const formattedRangeString = computed(() => {
-  const start = new Date(localValue.value[0])
-  const end   = new Date(localValue.value[1])
-  const df = new Intl.DateTimeFormat('fr-FR', { month: 'long', day: 'numeric' })
-  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
-  const endStr = end.toDateString() === new Date().toDateString()
-    ? "Aujourd'hui"
-    : capitalize(df.format(end))
-  return `${capitalize(df.format(start))} – ${endStr}`
+  const start = DateAdapter.fromTimestamp(localValue.value[0])
+  const end = DateAdapter.fromTimestamp(localValue.value[1])
+  return DateAdapter.formatRange(start,end)
 })
 
 const getPercentageForTimestamp = (ts: number): number =>
   ((ts - minTimestamp) / (maxTimestamp - minTimestamp)) * 100
 
-const months = computed(() =>
-  Array.from({ length: 12 }, (_, i) => {
-    const d = new Date(currentYear, i, 15)
-    return {
-      label: new Intl.DateTimeFormat('fr-FR', { month: 'short' }).format(d).replace('.', ''),
-      ts: d.getTime(),
-    }
-  })
-)
+const months = computed(() => DateAdapter.getYearMonths(currentYear))
 
 // ─── Drag & Drop (aucune dépendance externe) ────────────────────────────────
 const sliderTrackRef = ref<HTMLElement | null>(null)

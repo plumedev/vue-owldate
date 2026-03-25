@@ -1,9 +1,16 @@
+import { Temporal } from '@js-temporal/polyfill'
+
 /**
- * Represents a date range with a start and end date.
+ * Supported date types for the picker.
+ */
+export type DateValue = Date | Temporal.PlainDate | Temporal.ZonedDateTime
+
+/**
+ * Represents a date range with a start and end date value.
  */
 export interface DateRange {
-  start: Date
-  end: Date
+  start: DateValue
+  end: DateValue
 }
 
 /**
