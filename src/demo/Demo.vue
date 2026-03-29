@@ -9,13 +9,13 @@
       Plage sélectionnée&nbsp;:
       <strong>{{ format(range.start) }} → {{ format(range.end) }}</strong>
     </p>
-    <DateRangePicker v-model="range" />
+    <OwlDatePicker v-model="range" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import DateRangePicker from '../components/DateRangePicker.vue'
+import OwlDatePicker from '../components/OwlDatePicker.vue'
 import type { DateRange, DateValue } from '../types'
 import config from '../config'
 import { DateAdapter } from '../utils/date-adapter'

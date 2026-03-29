@@ -26,19 +26,19 @@ app.mount("#app");
 
 ```vue
 <!-- Dans n'importe quel composant -->
-<DateRangePicker v-model="myRange" />
+<OwlDatePicker v-model="myRange" />
 ```
 
 ### Import local (à la carte)
 
 ```vue
 <template>
-  <DateRangePicker v-model="myRange" />
+  <OwlDatePicker v-model="myRange" />
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { DateRangePicker } from "vue-owldate";
+import { OwlDatePicker } from "vue-owldate";
 import "vue-owldate/style.css";
 import type { DateRange } from "vue-owldate";
 

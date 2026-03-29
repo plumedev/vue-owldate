@@ -83,6 +83,7 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({ name: 'OwlDatePicker' })
 import { computed, ref, onBeforeUnmount, watch } from 'vue'
 import type { DateRange, DateRangePreset } from '../types'
 import { DateAdapter } from '../utils/date-adapter'

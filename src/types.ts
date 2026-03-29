@@ -21,10 +21,7 @@ export interface DateRangePreset {
   getRange: () => [number, number]
 }
 
-/**
- * Props for the DateRangePicker component.
- */
-export interface DateRangePickerProps {
+export interface OwlDatePickerProps {
   /** The selected date range (used with v-model). */
   modelValue: DateRange
   /** The locale used for date formatting (default: 'fr-FR'). */
