@@ -1,6 +1,6 @@
 {
   "name": "vue-owldate",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A lightweight and customizable date range picker component for Vue 3",
   "keywords": [
     "vue",
