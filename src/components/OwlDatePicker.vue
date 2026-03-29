@@ -105,19 +105,25 @@ const localValue = ref<[number, number]>([
 
 // Synchronisation entrante : si le parent change selected, on met à jour localValue
 watch(selected, (v) => {
-  localValue.value = [
-    v?.start ? DateAdapter.toTimestamp(v.start) : minTimestamp,
-    v?.end ? DateAdapter.toTimestamp(v.end) : maxTimestamp,
-  ]
+  if (!v) return
+  const sTs = DateAdapter.toTimestamp(v.start)
+  const eTs = DateAdapter.toTimestamp(v.end)
+  if (sTs !== localValue.value[0] || eTs !== localValue.value[1]) {
+    localValue.value = [sTs, eTs]
+  }
 }, { deep: true })
 
 // Synchronisation sortante : quand localValue change, on émet vers le parent
 watch(localValue, ([s, e]) => {
-  selected.value = { 
-    start: DateAdapter.fromTimestamp(s), 
-    end: DateAdapter.fromTimestamp(e) 
+  const currentS = selected.value?.start ? DateAdapter.toTimestamp(selected.value.start) : null
+  const currentE = selected.value?.end ? DateAdapter.toTimestamp(selected.value.end) : null
+  if (s !== currentS || e !== currentE) {
+    selected.value = { 
+      start: DateAdapter.fromTimestamp(s), 
+      end: DateAdapter.fromTimestamp(e) 
+    }
   }
-}, { deep: true })
+})
 
 // ─── Positions en % sur la piste ───────────────────────────────────────────
 const startPercent = computed(() => getPercentageForTimestamp(localValue.value[0]))
