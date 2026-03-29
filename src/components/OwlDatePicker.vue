@@ -84,7 +84,7 @@
 
 <script setup lang="ts">
 defineOptions({ name: 'OwlDatePicker' })
-import { computed, ref, onBeforeUnmount, watch } from 'vue'
+import { computed, ref, shallowRef, onBeforeUnmount, watch } from 'vue'
 import type { DateRange, DateRangePreset } from '../types'
 import { DateAdapter } from '../utils/date-adapter'
 
@@ -98,32 +98,33 @@ const minTimestamp = new Date(currentYear, 0, 1).getTime()
 const maxTimestamp = new Date(currentYear, 11, 31).getTime()
 
 // ─── État local (tableau [startTs, endTs]) ──────────────────────────────────
-const localValue = ref<[number, number]>([
+// On utilise shallowRef car on remplace toujours le tableau entier
+const localValue = shallowRef<[number, number]>([
   selected.value?.start ? DateAdapter.toTimestamp(selected.value.start) : minTimestamp,
   selected.value?.end ? DateAdapter.toTimestamp(selected.value.end) : maxTimestamp,
 ])
+
+/**
+ * Pousse les changements locaux vers le parent (v-model)
+ */
+const emitChange = () => {
+  const [s, e] = localValue.value
+  selected.value = { 
+    start: DateAdapter.fromTimestamp(s), 
+    end: DateAdapter.fromTimestamp(e) 
+  }
+}
 
 // Synchronisation entrante : si le parent change selected, on met à jour localValue
 watch(selected, (v) => {
   if (!v) return
   const sTs = DateAdapter.toTimestamp(v.start)
   const eTs = DateAdapter.toTimestamp(v.end)
+  // On ne met à jour localValue QUE si les timestamps diffèrent réellement
   if (sTs !== localValue.value[0] || eTs !== localValue.value[1]) {
     localValue.value = [sTs, eTs]
   }
 }, { deep: true })
-
-// Synchronisation sortante : quand localValue change, on émet vers le parent
-watch(localValue, ([s, e]) => {
-  const currentS = selected.value?.start ? DateAdapter.toTimestamp(selected.value.start) : null
-  const currentE = selected.value?.end ? DateAdapter.toTimestamp(selected.value.end) : null
-  if (s !== currentS || e !== currentE) {
-    selected.value = { 
-      start: DateAdapter.fromTimestamp(s), 
-      end: DateAdapter.fromTimestamp(e) 
-    }
-  }
-})
 
 // ─── Positions en % sur la piste ───────────────────────────────────────────
 const startPercent = computed(() => getPercentageForTimestamp(localValue.value[0]))
@@ -181,6 +182,7 @@ const applyPreset = (preset: DateRangePreset) => {
     Math.max(minTimestamp, start),
     Math.min(maxTimestamp, end),
   ]
+  emitChange()
 }
 
 // Réinitialise le preset actif si l'utilisateur déplace manuellement les poignées
@@ -250,9 +252,11 @@ const onPointerDownTrack = (e: PointerEvent) => {
 
   if (distLeft <= distRight) {
     localValue.value = [Math.min(clickTs, localValue.value[1] - DAY_MS), localValue.value[1]]
+    emitChange()
     startDrag('left', e)
   } else {
     localValue.value = [localValue.value[0], Math.max(clickTs, localValue.value[0] + DAY_MS)]
+    emitChange()
     startDrag('right', e)
   }
 }
@@ -285,6 +289,7 @@ const onPointerMove = (event: PointerEvent) => {
 
   if (newStart !== localValue.value[0] || newEnd !== localValue.value[1]) {
     localValue.value = [newStart, newEnd]
+    emitChange()
   }
 }
 
