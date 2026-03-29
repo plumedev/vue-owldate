@@ -18,3 +18,5 @@ export const VueOwldate = {
 
 // ── Types publics ───────────────────────────────────────────────────────────
 export type { DateRange, DateRangePreset, OwlDatePickerProps } from './types'
+
+export default VueOwldate

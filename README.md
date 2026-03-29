@@ -1,6 +1,6 @@
 # vue-owldate
 
-> A lightweight and customizable DatePicker component for Vue 3 + TypeScript.
+> A lightweight and customizable DatePicker component for Vue 3.4+ + TypeScript.
 
 ## Installation
 
@@ -16,7 +16,7 @@ npm install vue-owldate
 // main.ts
 import { createApp } from "vue";
 import App from "./App.vue";
-import { VueOwldate } from "vue-owldate";
+import VueOwldate from "vue-owldate";
 import "vue-owldate/style.css";
 
 const app = createApp(App);
