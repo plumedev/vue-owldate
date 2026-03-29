@@ -9,8 +9,8 @@ export type DateValue = Date | Temporal.PlainDate | Temporal.ZonedDateTime
  * Represents a date range with a start and end date value.
  */
 export interface DateRange {
-  start: DateValue
-  end: DateValue
+  start: DateValue | null
+  end: DateValue | null
 }
 
 /**

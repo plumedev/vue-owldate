@@ -25,7 +25,8 @@ const range = ref<DateRange>({
   end: DateAdapter.fromTimestamp(Date.now()),
 })
 
-const format = (val: DateValue) => {
+const format = (val: DateValue | null) => {
+  if (!val) return '—'
   if (val instanceof Date) return val.toLocaleDateString('fr-FR')
   return val.toLocaleString('fr-FR')
 }

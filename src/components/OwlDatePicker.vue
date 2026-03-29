@@ -100,8 +100,8 @@ const maxTimestamp = new Date(currentYear, 11, 31).getTime()
 // ─── État local (tableau [startTs, endTs]) ──────────────────────────────────
 // On utilise shallowRef car on remplace toujours le tableau entier
 const localValue = shallowRef<[number, number]>([
-  selected.value?.start ? DateAdapter.toTimestamp(selected.value.start) : minTimestamp,
-  selected.value?.end ? DateAdapter.toTimestamp(selected.value.end) : maxTimestamp,
+  DateAdapter.toTimestamp(selected.value?.start) ?? minTimestamp,
+  DateAdapter.toTimestamp(selected.value?.end) ?? maxTimestamp,
 ])
 
 /**
@@ -109,17 +109,23 @@ const localValue = shallowRef<[number, number]>([
  */
 const emitChange = () => {
   const [s, e] = localValue.value
-  selected.value = { 
-    start: DateAdapter.fromTimestamp(s), 
-    end: DateAdapter.fromTimestamp(e) 
+  
+  const currentS = DateAdapter.toTimestamp(selected.value?.start)
+  const currentE = DateAdapter.toTimestamp(selected.value?.end)
+
+  if (s !== currentS || e !== currentE) {
+    selected.value = { 
+      start: DateAdapter.fromTimestamp(s), 
+      end: DateAdapter.fromTimestamp(e)
+    }
   }
 }
 
 // Synchronisation entrante : si le parent change selected, on met à jour localValue
 watch(selected, (v) => {
   if (!v) return
-  const sTs = DateAdapter.toTimestamp(v.start)
-  const eTs = DateAdapter.toTimestamp(v.end)
+  const sTs = DateAdapter.toTimestamp(v.start) ?? minTimestamp
+  const eTs = DateAdapter.toTimestamp(v.end) ?? maxTimestamp
   // On ne met à jour localValue QUE si les timestamps diffèrent réellement
   if (sTs !== localValue.value[0] || eTs !== localValue.value[1]) {
     localValue.value = [sTs, eTs]
@@ -204,7 +210,8 @@ watch(localValue, (newVal) => {
 const formattedRangeString = computed(() => {
   const start = DateAdapter.fromTimestamp(localValue.value[0])
   const end = DateAdapter.fromTimestamp(localValue.value[1])
-  return DateAdapter.formatRange(start,end)
+  if (!start || !end) return ''
+  return DateAdapter.formatRange(start, end)
 })
 
 const getPercentageForTimestamp = (ts: number): number =>

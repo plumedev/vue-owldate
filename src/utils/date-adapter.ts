@@ -1,10 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill'
 import config from '../config'
 
-/**
- * Supported date types for the picker.
- */
-export type DateValue = Date | Temporal.PlainDate | Temporal.ZonedDateTime
+import type { DateValue } from '../types'
 
 /**
  * Adapter to handle both native `Date` and the new `Temporal` API.
@@ -13,23 +10,29 @@ export class DateAdapter {
   /**
    * Converts a date value into a numeric timestamp (ms).
    */
-  static toTimestamp(val: DateValue): number {
+  static toTimestamp(val: DateValue | undefined | null): number | null {
+    if (!val) return null
+    
+    let ts: number
     if (val instanceof Date) {
-       return val.getTime()
+       ts = val.getTime()
+    } else if (val instanceof Temporal.PlainDate) {
+       ts = val.toZonedDateTime('UTC').epochMilliseconds
+    } else if (val instanceof Temporal.ZonedDateTime) {
+       ts = val.epochMilliseconds
+    } else {
+       return null
     }
-    if (val instanceof Temporal.PlainDate) {
-       return val.toZonedDateTime('UTC').epochMilliseconds
-    }
-    if (val instanceof Temporal.ZonedDateTime) {
-       return val.epochMilliseconds
-    }
-    return 0
+
+    return isNaN(ts) ? null : ts
   }
 
   /**
    * Converts a numeric timestamp (ms) back to the configured DateValue type.
    */
-  static fromTimestamp(ts: number): DateValue {
+  static fromTimestamp(ts: number | null): DateValue | null {
+    if (ts === null || isNaN(ts)) return null
+
     if (!config.useTemporal) {
       return new Date(ts)
     }
@@ -62,8 +65,8 @@ export class DateAdapter {
   static formatRange(start: DateValue, end: DateValue, locale: string = 'fr-FR'): string {
      const startTs = this.toTimestamp(start)
      const endTs = this.toTimestamp(end)
-     const startDate = new Date(startTs)
-     const endDate = new Date(endTs)
+     const startDate = new Date(startTs ?? 0)
+     const endDate = new Date(endTs ?? 0)
      const today = new Date()
      
      const df = new Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric' })
