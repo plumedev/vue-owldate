@@ -1,0 +1,228 @@
+// ─── Variables CSS du composant ─────────────────────────────────────────────
+// Surchargeables par l'utilisateur depuis l'extérieur via :root { --drp-primary: ... }
+:root {
+  --drp-primary:        #6366f1;
+  --drp-bg:             #ffffff;
+  --drp-surface:        #f9fafb;
+  --drp-border:         #e5e7eb;
+  --drp-text:           #1f2937;
+  --drp-text-muted:     #9ca3af;
+  --drp-radius:         16px;
+  --drp-font:           system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --drp-tooltip-bg:     #111827;
+  --drp-tooltip-text:   #ffffff;
+}
+
+// ─── Racine du composant ─────────────────────────────────────────────────────
+.drp {
+  // Définition des variables dérivées dans le scope local pour qu'elles 
+  // réagissent aux surcharges de --drp-primary
+  --drp-primary-light:  color-mix(in srgb, var(--drp-primary), transparent 88%);
+  --drp-primary-border: color-mix(in srgb, var(--drp-primary), transparent 60%);
+
+  font-family:     var(--drp-font);
+  background:      var(--drp-bg);
+  border:          1px solid var(--drp-border);
+  border-radius:   var(--drp-radius);
+  box-shadow:      0 1px 3px rgba(0, 0, 0, 0.06);
+  padding:         20px;
+  width:           100%;
+  min-width:       600px;
+  box-sizing:      border-box;
+
+  // ── En-tête ─────────────────────────────────────────────────────────────
+  &__header {
+    display:         flex;
+    justify-content: space-between;
+    align-items:     center;
+    margin-bottom:   32px;
+  }
+
+  &__range-label {
+    font-size:   14px;
+    font-weight: 600;
+    color:       var(--drp-text);
+    letter-spacing: -0.01em;
+  }
+
+  // ── Boutons preset ───────────────────────────────────────────────────────
+  &__presets {
+    display:       flex;
+    gap:           4px;
+    background:    var(--drp-surface);
+    padding:       4px;
+    border-radius: calc(var(--drp-radius) * 0.5);
+  }
+
+  &__preset-btn {
+    padding:       6px 12px;
+    font-size:     12px;
+    font-weight:   500;
+    border:        none;
+    background:    transparent;
+    color:         var(--drp-text-muted);
+    border-radius: 6px;
+    cursor:        pointer;
+    transition:    background 0.15s, color 0.15s, box-shadow 0.15s;
+    font-family:   inherit;
+
+    &:hover {
+      background: rgba(156, 163, 175, 0.25);
+      color:      var(--drp-text);
+    }
+
+    &--active {
+      background:  var(--drp-bg);
+      color:       var(--drp-text);
+      box-shadow:  0 1px 3px rgba(0, 0, 0, 0.10);
+      border:      1px solid rgba(229, 231, 235, 0.8);
+    }
+  }
+
+  // ── Zone slider ─────────────────────────────────────────────────────────
+  &__slider-wrapper {
+    position: relative;
+    width:    100%;
+    padding:  8px 16px 24px;
+  }
+
+  // ── Info-bulle « N Jours » ───────────────────────────────────────────────
+  &__tooltip {
+    position:       absolute;
+    top:            -8px;
+    padding:        6px 12px;
+    background:     var(--drp-tooltip-bg);
+    color:          var(--drp-tooltip-text);
+    font-size:      12px;
+    font-weight:    500;
+    border-radius:  6px;
+    white-space:    nowrap;
+    pointer-events: none;
+    transform:      translateX(-50%);
+    z-index:        10;
+    transition:     left 0.08s ease;
+  }
+
+  &__tooltip-caret {
+    position:   absolute;
+    bottom:     -4px;
+    left:       50%;
+    transform:  translateX(-50%) rotate(45deg);
+    width:      8px;
+    height:     8px;
+    background: var(--drp-tooltip-bg);
+  }
+
+  // ── Piste principale ─────────────────────────────────────────────────────
+  &__track {
+    position:    relative;
+    width:       100%;
+    height:      40px;
+    touch-action: none;
+    user-select:  none;
+    margin-top:   8px;
+    cursor:       pointer;
+  }
+
+  &__track-inner {
+    position: absolute;
+    inset: 0;
+    // Graduation réactive via CSS
+    background-color: var(--drp-surface);
+    background-image: linear-gradient(to right, var(--drp-border) 1px, transparent 1px);
+    background-size: 40px 12px;
+    background-position: center bottom;
+    background-repeat: repeat-x;
+    border-radius: calc(var(--drp-radius) * 0.5);
+    overflow: hidden;
+  }
+
+  // ── Zone active (plage sélectionnée) ────────────────────────────────────
+  &__range {
+    position: absolute;
+    height:   100%;
+    background:   var(--drp-primary-light);
+    border-top:   2px solid var(--drp-primary-border);
+    border-bottom: 2px solid var(--drp-primary-border);
+    backdrop-filter: saturate(1.2);
+    cursor:  grab;
+    transition: background 0.1s;
+
+    &--dragging { cursor: grabbing; }
+  }
+
+  // ── Bordure décorative par-dessus la piste ───────────────────────────────
+  &__track-border {
+    position:       absolute;
+    inset:          0;
+    border:         1px solid var(--drp-border);
+    border-radius:  8px;
+    pointer-events: none;
+  }
+
+  // ── Poignées (thumbs) ────────────────────────────────────────────────────
+  &__thumb {
+    position: absolute;
+    top:      50%;
+    width:    0;
+    height:   0;
+    cursor:   ew-resize;
+    z-index:  10;
+
+    &:focus { outline: none; }
+
+    &:hover, &:focus {
+      .drp__thumb-handle {
+        transform: translate(-50%, -50%) scale(1.15);
+      }
+    }
+  }
+
+  // Le visuel par défaut de la poignée
+  &__thumb-handle {
+    position:   absolute;
+    top:        50%;
+    left:       50%;
+    transform:  translate(-50%, -50%);
+    width:      18px;
+    height:     30px;
+    background: var(--drp-bg);
+    border:     1.5px solid var(--drp-primary); // Réactif !
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.15s ease-out, border-color 0.15s;
+
+    // Les deux petites barres verticales au centre
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 4px;
+      height: 12px;
+      border-left: 1.5px solid var(--drp-primary);
+      border-right: 1.5px solid var(--drp-primary);
+      opacity: 0.6;
+    }
+  }
+
+  // ── Étiquettes des mois ──────────────────────────────────────────────────
+  &__months {
+    position:   relative;
+    width:      100%;
+    height:     16px;
+    margin-top: 12px;
+  }
+
+  &__month-label {
+    position:       absolute;
+    font-size:      11px;
+    color:          var(--drp-text-muted);
+    font-weight:    500;
+    text-transform: capitalize;
+    pointer-events: none;
+    transform:      translateX(-50%);
+    white-space:    nowrap;
+  }
+}

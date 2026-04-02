@@ -13,11 +13,38 @@ export interface OwldateConfig {
    * Default: 'PlainDate'
    */
   temporalType: 'PlainDate' | 'ZonedDateTime';
+  /**
+   * Whether presets (7J, 30J, etc.) should be in the future or past.
+   * Default: false (past)
+   */
+  futurePresets: boolean;
+  /**
+   * Whether to use dark mode.
+   * Default: false
+   */
+  darkMode: boolean;
+  /**
+   * Custom theme for the date picker.
+   */
+  theme: {
+    primary?: string;
+    background?: string;
+    surface?: string;
+    text?: string;
+    textMuted?: string;
+    border?: string;
+    radius?: string;
+    tooltipBg?: string;
+    tooltipText?: string;
+  };
 }
 
 const config: OwldateConfig = {
   useTemporal: false,
   temporalType: 'PlainDate',
+  futurePresets: true,
+  darkMode: false,
+  theme: {}, // On laisse les valeurs par défaut se gérer dans le composant
 };
 
 export default config;
