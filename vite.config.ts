@@ -11,8 +11,10 @@ export default defineConfig({
     ...(isLibBuild
       ? [
           dts({
-            include: ['src/**/*.ts', 'src/**/*.vue'],
+            include: ['src'],
+            entryRoot: 'src',
             insertTypesEntry: true,
+            cleanVueFileName: true,
           }),
         ]
       : []),

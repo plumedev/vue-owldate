@@ -20,19 +20,20 @@
   "module": "./dist/vue-owldate.js",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/src/index.d.ts",
       "import": "./dist/vue-owldate.js",
       "require": "./dist/vue-owldate.umd.cjs"
     },
     "./style.css": "./dist/style.css"
   },
-  "types": "./dist/index.d.ts",
+  "types": "./dist/src/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
     "dev": "vite",
-    "build": "cross-env BUILD_LIB=true vue-tsc --noEmit && cross-env BUILD_LIB=true vite build",
+    "prebuild": "node -e \"const fs = require('fs'); if (fs.existsSync('dist')) fs.rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run prebuild && cross-env BUILD_LIB=true vue-tsc --noEmit && cross-env BUILD_LIB=true vite build",
     "preview": "vite preview",
     "prepublishOnly": "npm run build"
   },
