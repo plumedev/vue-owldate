@@ -1,3 +1,5 @@
+import { reactive } from 'vue';
+
 /**
  * Configuration for vue-owldate.
  */
@@ -39,12 +41,12 @@ export interface OwldateConfig {
   };
 }
 
-const config: OwldateConfig = {
+const config = reactive<OwldateConfig>({
   useTemporal: false,
   temporalType: 'PlainDate',
   futurePresets: true,
   darkMode: false,
   theme: {}, // On laisse les valeurs par défaut se gérer dans le composant
-};
+});
 
 export default config;
