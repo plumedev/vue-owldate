@@ -366,5 +366,5 @@ onBeforeUnmount(onPointerUp)
 </script>
 
 <style lang="scss">
-@import "./OwlDatePicker.scss";
+@use "./OwlDatePicker.scss";
 </style>
