@@ -45,8 +45,8 @@ const config = reactive<OwldateConfig>({
   useTemporal: false,
   temporalType: 'PlainDate',
   futurePresets: true,
-  darkMode: false,
-  theme: {}, // On laisse les valeurs par défaut se gérer dans le composant
+  darkMode: true,
+  theme: {},
 });
 
 export default config;
