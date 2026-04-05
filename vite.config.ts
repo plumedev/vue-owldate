@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import dts from 'vite-plugin-dts'
+import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js'
 import { resolve } from 'path'
 
 const isLibBuild = process.env.BUILD_LIB === 'true'
@@ -8,12 +9,11 @@ const isLibBuild = process.env.BUILD_LIB === 'true'
 export default defineConfig({
   plugins: [
     vue(),
+    cssInjectedByJsPlugin(),
     ...(isLibBuild
       ? [
           dts({
-            include: ['src'],
             entryRoot: 'src',
-            insertTypesEntry: true,
             cleanVueFileName: true,
           }),
         ]

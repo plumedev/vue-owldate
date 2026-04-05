@@ -41,11 +41,11 @@ export interface OwldateConfig {
   };
 }
 
-const config = reactive<OwldateConfig>({
+export const config = reactive<OwldateConfig>({
   useTemporal: false,
   temporalType: 'PlainDate',
   futurePresets: true,
-  darkMode: true,
+  darkMode: false,
   theme: {},
 });
 
