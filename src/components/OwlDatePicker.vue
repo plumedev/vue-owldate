@@ -1,5 +1,5 @@
 <template>
-  <div class="drp" :class="{ 'drp--dark': config.darkMode }" :style="themeStyles">
+  <div class="drp">
 
     <!-- ── En-tête : plage affichée + raccourcis ── -->
     <div class="drp__header">
@@ -34,15 +34,13 @@
       <!-- Piste (Track) -->
       <div class="drp__track" ref="sliderTrackRef" @pointerdown="onPointerDownTrack">
 
-        <div class="drp__track-inner">
-          <!-- Zone active (plage bleue) -->
-          <div
-            class="drp__range"
-            :class="{ 'drp__range--dragging': dragState.type === 'range' }"
-            :style="{ left: `${startPercent}%`, width: `${endPercent - startPercent}%` }"
-            @pointerdown="onPointerDownRange"
-          />
-        </div>
+        <!-- Zone active (plage bleue) -->
+        <div
+          class="drp__range"
+          :class="{ 'drp__range--dragging': dragState.type === 'range' }"
+          :style="{ left: `${startPercent}%`, width: `${endPercent - startPercent}%` }"
+          @pointerdown="onPointerDownRange"
+        />
 
         <!-- Bordure décorative par-dessus la piste -->
         <div class="drp__track-border" />
@@ -55,13 +53,7 @@
           tabindex="0"
           aria-label="Date de début"
           @pointerdown="onPointerDownLeft"
-        >
-          <slot name="thumb" v-bind="{ side: 'left', value: selected.start }">
-            <slot name="thumb-left" v-bind="{ value: selected.start }">
-              <div class="drp__thumb-handle" />
-            </slot>
-          </slot>
-        </div>
+        />
 
         <!-- Poignée droite -->
         <div
@@ -71,13 +63,7 @@
           tabindex="0"
           aria-label="Date de fin"
           @pointerdown="onPointerDownRight"
-        >
-          <slot name="thumb" v-bind="{ side: 'right', value: selected.end }">
-            <slot name="thumb-right" v-bind="{ value: selected.end }">
-              <div class="drp__thumb-handle" />
-            </slot>
-          </slot>
-        </div>
+        />
       </div>
 
       <!-- Étiquettes des mois -->
@@ -101,7 +87,6 @@ defineOptions({ name: 'OwlDatePicker' })
 import { computed, ref, shallowRef, onBeforeUnmount, watch } from 'vue'
 import type { DateRange, DateRangePreset } from '../types'
 import { DateAdapter } from '../utils/date-adapter'
-import config from '../config'
 
 // ─── v-model ───────────────────────────────────────────────────────────────
 const selected = defineModel<DateRange>({ required: true })
@@ -176,22 +161,22 @@ const presets: DateRangePreset[] = [
   {
     label: '7J',
     getRange: () => {
-      const now = Date.now()
-      return config.futurePresets ? [now, now + 7 * DAY_MS] : [now - 7 * DAY_MS, now]
+      const end = Date.now()
+      return [end - 7 * DAY_MS, end]
     },
   },
   {
     label: '30J',
     getRange: () => {
-      const now = Date.now()
-      return config.futurePresets ? [now, now + 30 * DAY_MS] : [now - 30 * DAY_MS, now]
+      const end = Date.now()
+      return [end - 30 * DAY_MS, end]
     },
   },
   {
     label: '90J',
     getRange: () => {
-      const now = Date.now()
-      return config.futurePresets ? [now, now + 90 * DAY_MS] : [now - 90 * DAY_MS, now]
+      const end = Date.now()
+      return [end - 90 * DAY_MS, end]
     },
   },
 ]
@@ -322,49 +307,215 @@ const onPointerUp = () => {
   window.removeEventListener('pointercancel', onPointerUp)
 }
 
-const themeStyles = computed(() => {
-  const t = config.theme
-  const isDark = config.darkMode
-  
-  const defaults = isDark ? {
-    primary: '#818cf8',
-    background: '#0f172a',
-    surface: '#1e293b',
-    text: '#e2e8f0',
-    textMuted: '#94a3b8',
-    border: '#334155',
-    radius: '16px',
-    tooltipBg: '#f8fafc',
-    tooltipText: '#020617',
-  } : {
-    primary: '#6366f1',
-    background: '#ffffff',
-    surface: '#f9fafb',
-    text: '#1f2937',
-    textMuted: '#9ca3af',
-    border: '#e5e7eb',
-    radius: '16px',
-    tooltipBg: '#111827',
-    tooltipText: '#ffffff',
-  }
-
-  return {
-    '--drp-primary': t.primary || defaults.primary,
-    '--drp-bg': t.background || defaults.background,
-    '--drp-surface': t.surface || defaults.surface,
-    '--drp-text': t.text || defaults.text,
-    '--drp-text-muted': t.textMuted || defaults.textMuted,
-    '--drp-border': t.border || defaults.border,
-    '--drp-radius': t.radius || defaults.radius,
-    '--drp-tooltip-bg': t.tooltipBg || defaults.tooltipBg,
-    '--drp-tooltip-text': t.tooltipText || defaults.tooltipText,
-  }
-})
-
 // Nettoyage en cas de démontage pour éviter les fuites mémoire
 onBeforeUnmount(onPointerUp)
 </script>
 
 <style lang="scss">
-@use "./OwlDatePicker.scss";
+// ─── Variables CSS du composant ─────────────────────────────────────────────
+// Surchargeables par l'utilisateur depuis l'extérieur via :root { --drp-primary: ... }
+:root {
+  --drp-primary:        #6366f1;      // indigo-500
+  --drp-primary-light:  rgba(99, 102, 241, 0.12);
+  --drp-primary-border: rgba(99, 102, 241, 0.40);
+  --drp-bg:             #ffffff;
+  --drp-surface:        #f9fafb;
+  --drp-border:         #e5e7eb;
+  --drp-text:           #1f2937;
+  --drp-text-muted:     #9ca3af;
+  --drp-radius:         16px;
+  --drp-font:           system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+// ─── Racine du composant ─────────────────────────────────────────────────────
+.drp {
+  font-family:     var(--drp-font);
+  background:      var(--drp-bg);
+  border:          1px solid var(--drp-border);
+  border-radius:   var(--drp-radius);
+  box-shadow:      0 1px 3px rgba(0, 0, 0, 0.06);
+  padding:         20px;
+  width:           100%;
+  min-width:       600px;
+  box-sizing:      border-box;
+
+  // ── En-tête ─────────────────────────────────────────────────────────────
+  &__header {
+    display:         flex;
+    justify-content: space-between;
+    align-items:     center;
+    margin-bottom:   32px;
+  }
+
+  &__range-label {
+    font-size:   14px;
+    font-weight: 600;
+    color:       var(--drp-text);
+    letter-spacing: -0.01em;
+  }
+
+  // ── Boutons preset ───────────────────────────────────────────────────────
+  &__presets {
+    display:       flex;
+    gap:           4px;
+    background:    var(--drp-surface);
+    padding:       4px;
+    border-radius: 8px;
+  }
+
+  &__preset-btn {
+    padding:       6px 12px;
+    font-size:     12px;
+    font-weight:   500;
+    border:        none;
+    background:    transparent;
+    color:         var(--drp-text-muted);
+    border-radius: 6px;
+    cursor:        pointer;
+    transition:    background 0.15s, color 0.15s, box-shadow 0.15s;
+    font-family:   inherit;
+
+    &:hover {
+      background: rgba(156, 163, 175, 0.25);
+      color:      var(--drp-text);
+    }
+
+    &--active {
+      background:  var(--drp-bg);
+      color:       var(--drp-text);
+      box-shadow:  0 1px 3px rgba(0, 0, 0, 0.10);
+      border:      1px solid rgba(229, 231, 235, 0.8);
+    }
+  }
+
+  // ── Zone slider ─────────────────────────────────────────────────────────
+  &__slider-wrapper {
+    position: relative;
+    width:    100%;
+    padding:  8px 16px 24px;
+  }
+
+  // ── Info-bulle « N Jours » ───────────────────────────────────────────────
+  &__tooltip {
+    position:       absolute;
+    top:            -8px;
+    padding:        6px 12px;
+    background:     #111827;
+    color:          #fff;
+    font-size:      12px;
+    font-weight:    500;
+    border-radius:  6px;
+    white-space:    nowrap;
+    pointer-events: none;
+    transform:      translateX(-50%);
+    z-index:        10;
+    transition:     left 0.08s ease;
+  }
+
+  &__tooltip-caret {
+    position:   absolute;
+    bottom:     -4px;
+    left:       50%;
+    transform:  translateX(-50%) rotate(45deg);
+    width:      8px;
+    height:     8px;
+    background: #111827;
+  }
+
+  // ── Piste principale ─────────────────────────────────────────────────────
+  &__track {
+    position:    relative;
+    width:       100%;
+    height:      40px;
+    touch-action: none;
+    user-select:  none;
+    margin-top:   8px;
+    cursor:       pointer;
+
+    // Fond texturé en SVG inline (graduation)
+    background-color: var(--drp-surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cline x1='20' y1='28' x2='20' y2='40' stroke='%23d1d5db' stroke-width='1'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-position: center;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  // ── Zone active (plage sélectionnée) ────────────────────────────────────
+  &__range {
+    position: absolute;
+    height:   100%;
+    background:   var(--drp-primary-light);
+    border-top:   2px solid var(--drp-primary-border);
+    border-bottom: 2px solid var(--drp-primary-border);
+    backdrop-filter: saturate(1.2);
+    cursor:  grab;
+    transition: background 0.1s;
+
+    &--dragging { cursor: grabbing; }
+  }
+
+  // ── Bordure décorative par-dessus la piste ───────────────────────────────
+  &__track-border {
+    position:       absolute;
+    inset:          0;
+    border:         1px solid var(--drp-border);
+    border-radius:  8px;
+    pointer-events: none;
+  }
+
+  // ── Poignées (thumbs) ────────────────────────────────────────────────────
+  &__thumb {
+    position: absolute;
+    top:      50%;
+    width:    0;
+    height:   0;
+    cursor:   ew-resize;
+    z-index:  10;
+
+    &:focus { outline: none; }
+
+    // Le visuel de la poignée via ::after
+    &::after {
+      content:    '';
+      position:   absolute;
+      top:        50%;
+      left:       50%;
+      transform:  translate(-50%, -50%);
+      width:      20px;
+      height:     32px;
+      // Poignée SVG inline (deux lignes verticales)
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='32' viewBox='0 0 20 32'%3E%3Crect x='0' y='0' width='20' height='32' rx='4' fill='white' stroke='%23d1d5db' stroke-width='1.5'/%3E%3Cline x1='7' y1='10' x2='7' y2='22' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='13' y1='10' x2='13' y2='22' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat:   no-repeat;
+      background-position: center;
+      background-size:     contain;
+      filter:     drop-shadow(0 1px 3px rgba(0,0,0,0.15));
+      transition: transform 0.15s ease-out;
+    }
+
+    &:hover::after,
+    &:focus::after {
+      transform: translate(-50%, -50%) scale(1.15);
+    }
+  }
+
+  // ── Étiquettes des mois ──────────────────────────────────────────────────
+  &__months {
+    position:   relative;
+    width:      100%;
+    height:     16px;
+    margin-top: 12px;
+  }
+
+  &__month-label {
+    position:       absolute;
+    font-size:      11px;
+    color:          var(--drp-text-muted);
+    font-weight:    500;
+    text-transform: capitalize;
+    pointer-events: none;
+    transform:      translateX(-50%);
+    white-space:    nowrap;
+  }
+}
 </style>

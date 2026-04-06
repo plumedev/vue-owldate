@@ -1,6 +1,6 @@
 {
   "name": "vue-owldate",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A lightweight and customizable date range picker component for Vue 3",
   "keywords": [
     "vue",
@@ -23,7 +23,8 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/vue-owldate.js",
       "require": "./dist/vue-owldate.umd.cjs"
-    }
+    },
+    "./style.css": "./dist/vue-owldate.css"
   },
   "types": "./dist/index.d.ts",
   "files": [
@@ -40,13 +41,11 @@
     "vue": "^3.4.0"
   },
   "devDependencies": {
-    "@types/node": "^25.5.2",
     "@vitejs/plugin-vue": "^6.0.5",
     "cross-env": "^10.1.0",
     "sass": "^1.98.0",
     "typescript": "^6.0.2",
     "vite": "^8.0.3",
-    "vite-plugin-css-injected-by-js": "^4.0.1",
     "vite-plugin-dts": "^4.5.4",
     "vue": "^3.4.0",
     "vue-tsc": "^3.2.6"
