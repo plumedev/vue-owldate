@@ -9,7 +9,6 @@ const isLibBuild = process.env.BUILD_LIB === 'true'
 export default defineConfig({
   plugins: [
     vue(),
-    cssInjectedByJsPlugin(),
     ...(isLibBuild
       ? [
           dts({
@@ -18,6 +17,7 @@ export default defineConfig({
           }),
         ]
       : []),
+    cssInjectedByJsPlugin(),
   ],
   ...(isLibBuild
     ? {
