@@ -1,29 +1,29 @@
 // ─── Variables CSS du composant ─────────────────────────────────────────────
-// Surchargeables par l'utilisateur depuis l'extérieur via :root { --drp-primary: ... }
+// Surchargeables par l'utilisateur depuis l'extérieur via :root { --vod-primary: ... }
 :root {
-  --drp-primary:        #6366f1;
-  --drp-bg:             #ffffff;
-  --drp-surface:        #f9fafb;
-  --drp-border:         #e5e7eb;
-  --drp-text:           #1f2937;
-  --drp-text-muted:     #9ca3af;
-  --drp-radius:         16px;
-  --drp-font:           system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --drp-tooltip-bg:     #111827;
-  --drp-tooltip-text:   #ffffff;
+  --vod-primary:        #6366f1;
+  --vod-bg:             #ffffff;
+  --vod-surface:        #f9fafb;
+  --vod-border:         #e5e7eb;
+  --vod-text:           #1f2937;
+  --vod-text-muted:     #9ca3af;
+  --vod-radius:         16px;
+  --vod-font:           system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --vod-tooltip-bg:     #111827;
+  --vod-tooltip-text:   #ffffff;
 }
 
 // ─── Racine du composant ─────────────────────────────────────────────────────
-.drp {
+.vod {
   // Définition des variables dérivées dans le scope local pour qu'elles 
-  // réagissent aux surcharges de --drp-primary
-  --drp-primary-light:  color-mix(in srgb, var(--drp-primary), transparent 88%);
-  --drp-primary-border: color-mix(in srgb, var(--drp-primary), transparent 60%);
+  // réagissent aux surcharges de --vod-primary
+  --vod-primary-light:  color-mix(in srgb, var(--vod-primary), transparent 88%);
+  --vod-primary-border: color-mix(in srgb, var(--vod-primary), transparent 60%);
 
-  font-family:     var(--drp-font);
-  background:      var(--drp-bg);
-  border:          1px solid var(--drp-border);
-  border-radius:   var(--drp-radius);
+  font-family:     var(--vod-font);
+  background:      var(--vod-bg);
+  border:          1px solid var(--vod-border);
+  border-radius:   var(--vod-radius);
   box-shadow:      0 1px 3px rgba(0, 0, 0, 0.06);
   padding:         20px;
   width:           100%;
@@ -41,7 +41,7 @@
   &__range-label {
     font-size:   14px;
     font-weight: 600;
-    color:       var(--drp-text);
+    color:       var(--vod-text);
     letter-spacing: -0.01em;
   }
 
@@ -49,9 +49,9 @@
   &__presets {
     display:       flex;
     gap:           4px;
-    background:    var(--drp-surface);
+    background:    var(--vod-surface);
     padding:       4px;
-    border-radius: calc(var(--drp-radius) * 0.5);
+    border-radius: calc(var(--vod-radius) * 0.5);
   }
 
   &__preset-btn {
@@ -60,7 +60,7 @@
     font-weight:   500;
     border:        none;
     background:    transparent;
-    color:         var(--drp-text-muted);
+    color:         var(--vod-text-muted);
     border-radius: 6px;
     cursor:        pointer;
     transition:    background 0.15s, color 0.15s, box-shadow 0.15s;
@@ -68,12 +68,12 @@
 
     &:hover {
       background: rgba(156, 163, 175, 0.25);
-      color:      var(--drp-text);
+      color:      var(--vod-text);
     }
 
     &--active {
-      background:  var(--drp-bg);
-      color:       var(--drp-text);
+      background:  var(--vod-bg);
+      color:       var(--vod-text);
       box-shadow:  0 1px 3px rgba(0, 0, 0, 0.10);
       border:      1px solid rgba(229, 231, 235, 0.8);
     }
@@ -91,8 +91,8 @@
     position:       absolute;
     top:            -8px;
     padding:        6px 12px;
-    background:     var(--drp-tooltip-bg);
-    color:          var(--drp-tooltip-text);
+    background:     var(--vod-tooltip-bg);
+    color:          var(--vod-tooltip-text);
     font-size:      12px;
     font-weight:    500;
     border-radius:  6px;
@@ -110,7 +110,7 @@
     transform:  translateX(-50%) rotate(45deg);
     width:      8px;
     height:     8px;
-    background: var(--drp-tooltip-bg);
+    background: var(--vod-tooltip-bg);
   }
 
   // ── Piste principale ─────────────────────────────────────────────────────
@@ -128,12 +128,12 @@
     position: absolute;
     inset: 0;
     // Graduation réactive via CSS
-    background-color: var(--drp-surface);
-    background-image: linear-gradient(to right, var(--drp-border) 1px, transparent 1px);
+    background-color: var(--vod-surface);
+    background-image: var(--vod-track-image, linear-gradient(to right, var(--vod-border) 1px, transparent 1px));
     background-size: 40px 12px;
     background-position: center bottom;
     background-repeat: repeat-x;
-    border-radius: calc(var(--drp-radius) * 0.5);
+    border-radius: calc(var(--vod-radius) * 0.5);
     overflow: hidden;
   }
 
@@ -141,9 +141,9 @@
   &__range {
     position: absolute;
     height:   100%;
-    background:   var(--drp-primary-light);
-    border-top:   2px solid var(--drp-primary-border);
-    border-bottom: 2px solid var(--drp-primary-border);
+    background:   var(--vod-range-bg, var(--vod-primary-light));
+    border-top:   2px solid var(--vod-range-border, var(--vod-primary-border));
+    border-bottom: 2px solid var(--vod-range-border, var(--vod-primary-border));
     backdrop-filter: saturate(1.2);
     cursor:  grab;
     transition: background 0.1s;
@@ -155,7 +155,7 @@
   &__track-border {
     position:       absolute;
     inset:          0;
-    border:         1px solid var(--drp-border);
+    border:         1px solid var(--vod-border);
     border-radius:  8px;
     pointer-events: none;
   }
@@ -172,7 +172,7 @@
     &:focus { outline: none; }
 
     &:hover, &:focus {
-      .drp__thumb-handle {
+      .vod__thumb-handle {
         transform: translate(-50%, -50%) scale(1.15);
       }
     }
@@ -186,8 +186,8 @@
     transform:  translate(-50%, -50%);
     width:      18px;
     height:     30px;
-    background: var(--drp-bg);
-    border:     1.5px solid var(--drp-primary); // Réactif !
+    background: var(--vod-bg);
+    border:     1.5px solid var(--vod-primary); // Réactif !
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: transform 0.15s ease-out, border-color 0.15s;
@@ -201,8 +201,8 @@
       transform: translate(-50%, -50%);
       width: 4px;
       height: 12px;
-      border-left: 1.5px solid var(--drp-primary);
-      border-right: 1.5px solid var(--drp-primary);
+      border-left: 1.5px solid var(--vod-primary);
+      border-right: 1.5px solid var(--vod-primary);
       opacity: 0.6;
     }
   }
@@ -218,7 +218,7 @@
   &__month-label {
     position:       absolute;
     font-size:      11px;
-    color:          var(--drp-text-muted);
+    color:          var(--vod-text-muted);
     font-weight:    500;
     text-transform: capitalize;
     pointer-events: none;

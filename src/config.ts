@@ -1,3 +1,5 @@
+import { reactive } from 'vue';
+
 /**
  * Configuration for vue-owldate.
  */
@@ -13,11 +15,31 @@ export interface OwldateConfig {
    * Default: 'PlainDate'
    */
   temporalType: 'PlainDate' | 'ZonedDateTime';
+  /**
+   * Custom theme for the date picker.
+   */
+  theme: {
+    primary?: string;
+    background?: string;
+    surface?: string;
+    border?: string;
+    text?: string;
+    textMuted?: string;
+    radius?: string;
+    font?: string;
+    tooltipBg?: string;
+    tooltipText?: string;
+    rangeBorder?: string;
+    rangeBackground?: string;
+    trackImage?: string;
+  };
 }
 
-const config: OwldateConfig = {
+export const config = reactive<OwldateConfig>({
   useTemporal: false,
   temporalType: 'PlainDate',
-};
+  theme: {
+  },
+});
 
 export default config;

@@ -1,16 +1,16 @@
 <template>
-  <div class="drp">
+  <div id="test" class="vod" :style="themeStyles">
 
     <!-- ── En-tête : plage affichée + raccourcis ── -->
-    <div class="drp__header">
-      <span class="drp__range-label">{{ formattedRangeString }}</span>
+    <div class="vod__header">
+      <span class="vod__range-label">{{ formattedRangeString }}</span>
 
-      <div class="drp__presets">
+      <div class="vod__presets">
         <button
           v-for="preset in presets"
           :key="preset.label"
-          class="drp__preset-btn"
-          :class="{ 'drp__preset-btn--active': activePreset === preset.label }"
+          class="vod__preset-btn"
+          :class="{ 'vod__preset-btn--active': activePreset === preset.label }"
           @click="applyPreset(preset)"
         >
           {{ preset.label }}
@@ -19,35 +19,35 @@
     </div>
 
     <!-- ── Zone du slider ── -->
-    <div class="drp__slider-wrapper">
+    <div class="vod__slider-wrapper">
 
       <!-- Info-bulle flottante « N Jours » -->
       <div
         v-if="durationInDays > 0"
-        class="drp__tooltip"
+        class="vod__tooltip"
         :style="{ left: `${centerOfRangePercentage}%` }"
       >
         {{ durationInDays }} Jours
-        <span class="drp__tooltip-caret" />
+        <span class="vod__tooltip-caret" />
       </div>
 
       <!-- Piste (Track) -->
-      <div class="drp__track" ref="sliderTrackRef" @pointerdown="onPointerDownTrack">
+      <div class="vod__track" ref="sliderTrackRef" @pointerdown="onPointerDownTrack">
 
         <!-- Zone active (plage bleue) -->
         <div
-          class="drp__range"
-          :class="{ 'drp__range--dragging': dragState.type === 'range' }"
+          class="vod__range"
+          :class="{ 'vod__range--dragging': dragState.type === 'range' }"
           :style="{ left: `${startPercent}%`, width: `${endPercent - startPercent}%` }"
           @pointerdown="onPointerDownRange"
         />
 
         <!-- Bordure décorative par-dessus la piste -->
-        <div class="drp__track-border" />
+        <div class="vod__track-border" />
 
         <!-- Poignée gauche -->
         <div
-          class="drp__thumb drp__thumb--left"
+          class="vod__thumb vod__thumb--left"
           :style="{ left: `${startPercent}%` }"
           role="slider"
           tabindex="0"
@@ -57,7 +57,7 @@
 
         <!-- Poignée droite -->
         <div
-          class="drp__thumb drp__thumb--right"
+          class="vod__thumb vod__thumb--right"
           :style="{ left: `${endPercent}%` }"
           role="slider"
           tabindex="0"
@@ -67,11 +67,11 @@
       </div>
 
       <!-- Étiquettes des mois -->
-      <div class="drp__months">
+      <div class="vod__months">
         <span
           v-for="month in months"
           :key="month.ts"
-          class="drp__month-label"
+          class="vod__month-label"
           :style="{ left: `${getPercentageForTimestamp(month.ts)}%` }"
         >
           {{ month.label }}
@@ -87,6 +87,26 @@ defineOptions({ name: 'OwlDatePicker' })
 import { computed, ref, shallowRef, onBeforeUnmount, watch } from 'vue'
 import type { DateRange, DateRangePreset } from '../types'
 import { DateAdapter } from '../utils/date-adapter'
+import config from '../config'
+
+const themeStyles = computed(() => {
+  const t = config.theme
+  return {
+    '--vod-primary': t.primary,
+    '--vod-bg': t.background,
+    '--vod-surface': t.surface,
+    '--vod-border': t.border,
+    '--vod-text': t.text,
+    '--vod-text-muted': t.textMuted,
+    '--vod-radius': t.radius,
+    '--vod-font': t.font,
+    '--vod-tooltip-bg': t.tooltipBg,
+    '--vod-tooltip-text': t.tooltipText,
+    '--vod-range-border': t.rangeBorder,
+    '--vod-range-bg': t.rangeBackground,
+    '--vod-track-image': t.trackImage,
+  }
+})
 
 // ─── v-model ───────────────────────────────────────────────────────────────
 const selected = defineModel<DateRange>({ required: true })
@@ -313,26 +333,26 @@ onBeforeUnmount(onPointerUp)
 
 <style lang="scss">
 // ─── Variables CSS du composant ─────────────────────────────────────────────
-// Surchargeables par l'utilisateur depuis l'extérieur via :root { --drp-primary: ... }
+// Surchargeables par l'utilisateur depuis l'extérieur via :root { --vod-primary: ... }
 :root {
-  --drp-primary:        #6366f1;      // indigo-500
-  --drp-primary-light:  rgba(99, 102, 241, 0.12);
-  --drp-primary-border: rgba(99, 102, 241, 0.40);
-  --drp-bg:             #ffffff;
-  --drp-surface:        #f9fafb;
-  --drp-border:         #e5e7eb;
-  --drp-text:           #1f2937;
-  --drp-text-muted:     #9ca3af;
-  --drp-radius:         16px;
-  --drp-font:           system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --vod-primary:        #6366f1;      // indigo-500
+  --vod-primary-light:  rgba(99, 102, 241, 0.12);
+  --vod-primary-border: rgba(99, 102, 241, 0.40);
+  --vod-bg:             #ffffff;
+  --vod-surface:        #f9fafb;
+  --vod-border:         #e5e7eb;
+  --vod-text:           #1f2937;
+  --vod-text-muted:     #9ca3af;
+  --vod-radius:         16px;
+  --vod-font:           system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 // ─── Racine du composant ─────────────────────────────────────────────────────
-.drp {
-  font-family:     var(--drp-font);
-  background:      var(--drp-bg);
-  border:          1px solid var(--drp-border);
-  border-radius:   var(--drp-radius);
+.vod {
+  font-family:     var(--vod-font);
+  background:      var(--vod-bg);
+  border:          1px solid var(--vod-border);
+  border-radius:   var(--vod-radius);
   box-shadow:      0 1px 3px rgba(0, 0, 0, 0.06);
   padding:         20px;
   width:           100%;
@@ -350,7 +370,7 @@ onBeforeUnmount(onPointerUp)
   &__range-label {
     font-size:   14px;
     font-weight: 600;
-    color:       var(--drp-text);
+    color:       var(--vod-text);
     letter-spacing: -0.01em;
   }
 
@@ -358,7 +378,7 @@ onBeforeUnmount(onPointerUp)
   &__presets {
     display:       flex;
     gap:           4px;
-    background:    var(--drp-surface);
+    background:    var(--vod-surface);
     padding:       4px;
     border-radius: 8px;
   }
@@ -369,7 +389,7 @@ onBeforeUnmount(onPointerUp)
     font-weight:   500;
     border:        none;
     background:    transparent;
-    color:         var(--drp-text-muted);
+    color:         var(--vod-text-muted);
     border-radius: 6px;
     cursor:        pointer;
     transition:    background 0.15s, color 0.15s, box-shadow 0.15s;
@@ -377,12 +397,12 @@ onBeforeUnmount(onPointerUp)
 
     &:hover {
       background: rgba(156, 163, 175, 0.25);
-      color:      var(--drp-text);
+      color:      var(--vod-text);
     }
 
     &--active {
-      background:  var(--drp-bg);
-      color:       var(--drp-text);
+      background:  var(--vod-bg);
+      color:       var(--vod-text);
       box-shadow:  0 1px 3px rgba(0, 0, 0, 0.10);
       border:      1px solid rgba(229, 231, 235, 0.8);
     }
@@ -400,8 +420,8 @@ onBeforeUnmount(onPointerUp)
     position:       absolute;
     top:            -8px;
     padding:        6px 12px;
-    background:     #111827;
-    color:          #fff;
+    background:     var(--vod-tooltip-bg, #111827);
+    color:          var(--vod-tooltip-text, #ffffff);
     font-size:      12px;
     font-weight:    500;
     border-radius:  6px;
@@ -419,7 +439,7 @@ onBeforeUnmount(onPointerUp)
     transform:  translateX(-50%) rotate(45deg);
     width:      8px;
     height:     8px;
-    background: #111827;
+    background: var(--vod-tooltip-bg, #111827);
   }
 
   // ── Piste principale ─────────────────────────────────────────────────────
@@ -433,8 +453,8 @@ onBeforeUnmount(onPointerUp)
     cursor:       pointer;
 
     // Fond texturé en SVG inline (graduation)
-    background-color: var(--drp-surface);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cline x1='20' y1='28' x2='20' y2='40' stroke='%23d1d5db' stroke-width='1'/%3E%3C/svg%3E");
+    background-color: var(--vod-surface);
+    background-image: var(--vod-track-image, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cline x1='20' y1='28' x2='20' y2='40' stroke='%23d1d5db' stroke-width='1'/%3E%3C/svg%3E"));
     background-repeat: repeat-x;
     background-position: center;
     border-radius: 8px;
@@ -445,9 +465,9 @@ onBeforeUnmount(onPointerUp)
   &__range {
     position: absolute;
     height:   100%;
-    background:   var(--drp-primary-light);
-    border-top:   2px solid var(--drp-primary-border);
-    border-bottom: 2px solid var(--drp-primary-border);
+    background:   var(--vod-range-bg, var(--vod-primary-light));
+    border-top:   2px solid var(--vod-range-border, var(--vod-primary-border));
+    border-bottom: 2px solid var(--vod-range-border, var(--vod-primary-border));
     backdrop-filter: saturate(1.2);
     cursor:  grab;
     transition: background 0.1s;
@@ -459,7 +479,7 @@ onBeforeUnmount(onPointerUp)
   &__track-border {
     position:       absolute;
     inset:          0;
-    border:         1px solid var(--drp-border);
+    border:         1px solid var(--vod-border);
     border-radius:  8px;
     pointer-events: none;
   }
@@ -510,7 +530,7 @@ onBeforeUnmount(onPointerUp)
   &__month-label {
     position:       absolute;
     font-size:      11px;
-    color:          var(--drp-text-muted);
+    color:          var(--vod-text-muted);
     font-weight:    500;
     text-transform: capitalize;
     pointer-events: none;
