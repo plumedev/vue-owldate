@@ -16,6 +16,12 @@ export interface OwldateConfig {
    */
   temporalType: 'PlainDate' | 'ZonedDateTime';
   /**
+   * Position of the header (presets and range label).
+   * 'top', 'bottom', 'left', 'right'.
+   * Default: 'top'
+   */
+  headerPosition: 'top' | 'bottom' | 'left' | 'right';
+  /**
    * Custom theme for the date picker.
    */
   theme: {
@@ -38,6 +44,7 @@ export interface OwldateConfig {
 export const config = reactive<OwldateConfig>({
   useTemporal: false,
   temporalType: 'PlainDate',
+  headerPosition: 'top',
   theme: {
   },
 });

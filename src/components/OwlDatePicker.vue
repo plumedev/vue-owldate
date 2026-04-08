@@ -1,5 +1,5 @@
 <template>
-  <div id="test" class="vod" :style="themeStyles">
+  <div id="test" :class="['vod', 'vod--' + config.headerPosition]" :style="themeStyles">
 
     <!-- ── En-tête : plage affichée + raccourcis ── -->
     <div class="vod__header">
@@ -347,6 +347,10 @@ onBeforeUnmount(onPointerUp)
   --vod-font:           system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
+#test {
+  display: flex;
+}
+
 // ─── Racine du composant ─────────────────────────────────────────────────────
 .vod {
   font-family:     var(--vod-font);
@@ -358,13 +362,52 @@ onBeforeUnmount(onPointerUp)
   width:           100%;
   min-width:       600px;
   box-sizing:      border-box;
+  display: flex;
+  transition: all 0.3s ease;
+
+  // ── Modificateurs de disposition ──
+  &--top    { flex-direction: column; }
+  &--bottom { flex-direction: column-reverse; }
+  &--left   { flex-direction: row; align-items: stretch; }
+  &--right  { flex-direction: row-reverse; align-items: stretch; }
 
   // ── En-tête ─────────────────────────────────────────────────────────────
   &__header {
     display:         flex;
     justify-content: space-between;
-    align-items:     center;
-    margin-bottom:   32px;
+    box-sizing:      border-box;
+
+    // Ajustements selon la position
+    .vod--top &, .vod--bottom & {
+      flex-direction: row;
+      align-items:     center;
+      margin-bottom:   32px;
+      width: 100%;
+    }
+
+    .vod--bottom & {
+      margin-bottom: 0;
+      margin-top: 32px;
+    }
+
+    .vod--left &, .vod--right & {
+      flex-direction: column;
+      flex-shrink: 0;
+      width: 250px;
+      padding-right: 20px;
+    }
+
+    .vod--left & {
+      margin-right: 32px;
+      border-right: 1px solid var(--vod-border);
+    }
+
+    .vod--right & {
+      margin-left: 32px;
+      border-left: 1px solid var(--vod-border);
+      padding-right: 0;
+      padding-left: 20px;
+    }
   }
 
   &__range-label {
