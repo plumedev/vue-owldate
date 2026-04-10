@@ -16,6 +16,11 @@ export interface OwldateConfig {
    */
   temporalType: 'PlainDate' | 'ZonedDateTime';
   /**
+   * Whether to use dark mode.
+   * Default: false
+   */
+  darkMode?: boolean;
+  /**
    * Position of the header (presets and range label).
    * 'top', 'bottom', 'left', 'right'.
    * Default: 'top'
@@ -44,6 +49,7 @@ export interface OwldateConfig {
 export const config = reactive<OwldateConfig>({
   useTemporal: false,
   temporalType: 'PlainDate',
+  darkMode: false,
   headerPosition: 'top',
   theme: {
   },
