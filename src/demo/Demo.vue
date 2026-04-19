@@ -1,6 +1,6 @@
 <template>
   <div style="min-height: 100vh; background: #f5f5f5; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; font-family: sans-serif;">
-    <h1 style="margin-bottom: 8px; font-size: 20px; color: #111;">Vue DatePicker — Démo</h1>
+    <h1 style="margin-bottom: 8px; font-size: 20px; color: #111;">Vue OwlDatePicker — Démo</h1>
     <p style="margin-bottom: 16px; color: #666; font-size: 14px;">
       Mode actuel : <strong>{{ config.useTemporal ? 'Temporal API (' + config.temporalType + ')' : 'Native Date' }}</strong>
       <button @click="toggleApi" style="margin-left: 10px; cursor: pointer;">Changer d'API</button>
@@ -32,10 +32,10 @@ const format = (val: DateValue | null) => {
 }
 
 const toggleApi = () => {
-  // On change le mode dans la config
+  // Change the mode in the config
   config.useTemporal = !config.useTemporal
   
-  // On convertit les valeurs actuelles pour le v-model
+  // Convert current values for the v-model
   range.value = {
     start: DateAdapter.fromTimestamp(DateAdapter.toTimestamp(range.value.start)),
     end: DateAdapter.fromTimestamp(DateAdapter.toTimestamp(range.value.end)),

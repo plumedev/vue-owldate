@@ -2,7 +2,7 @@ import type { App } from 'vue'
 import OwlDatePicker from './components/OwlDatePicker.vue'
 import config, { type OwldateConfig } from './config'
 
-// ── Plugin Vue (export par défaut et nommé) ──────────────────────────────────
+// Vue Plugin (default and named export) 
 export const VueOwldate = {
   install(app: App, options?: Partial<OwldateConfig>) {
     if (options) {
@@ -12,10 +12,10 @@ export const VueOwldate = {
   },
 }
 
-// ── Export nommé du composant ───────────────────────────────────────────────
+// Named export of the component 
 export { default as OwlDatePicker } from './components/OwlDatePicker.vue'
 
-// ── Types publics ───────────────────────────────────────────────────────────
+// Public types 
 export type { DateRange, DateRangePreset, OwlDatePickerProps } from './types'
 export type { OwldateConfig } from './config'
 

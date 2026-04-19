@@ -1,7 +1,8 @@
-// ─── Variables CSS du composant ─────────────────────────────────────────────
-// Surchargeables par l'utilisateur depuis l'extérieur via :root { --vod-primary: ... }
+// Component CSS Variables
 :root {
-  --vod-primary:        #6366f1;
+  --vod-primary:        #8263f1;
+  --vod-primary-light:  color-mix(in srgb, var(--vod-primary), transparent 88%);
+  --vod-primary-border: color-mix(in srgb, var(--vod-primary), transparent 60%);
   --vod-bg:             #ffffff;
   --vod-surface:        #f9fafb;
   --vod-border:         #e5e7eb;
@@ -9,17 +10,15 @@
   --vod-text-muted:     #9ca3af;
   --vod-radius:         16px;
   --vod-font:           system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --vod-tooltip-bg:     #111827;
-  --vod-tooltip-text:   #ffffff;
+  --vod-range-border-thickness: 2px;
 }
 
-// ─── Racine du composant ─────────────────────────────────────────────────────
-.vod {
-  // Définition des variables dérivées dans le scope local pour qu'elles 
-  // réagissent aux surcharges de --vod-primary
-  --vod-primary-light:  color-mix(in srgb, var(--vod-primary), transparent 88%);
-  --vod-primary-border: color-mix(in srgb, var(--vod-primary), transparent 60%);
+#test {
+  display: flex;
+}
 
+// Component root
+.vod {
   font-family:     var(--vod-font);
   background:      var(--vod-bg);
   border:          1px solid var(--vod-border);
@@ -29,13 +28,52 @@
   width:           100%;
   min-width:       600px;
   box-sizing:      border-box;
+  display: flex;
+  transition: all 0.3s ease;
 
-  // ── En-tête ─────────────────────────────────────────────────────────────
+  // Layout modifiers
+  &--top    { flex-direction: column; }
+  &--bottom { flex-direction: column-reverse; }
+  &--left   { flex-direction: row; align-items: stretch; }
+  &--right  { flex-direction: row-reverse; align-items: stretch; }
+
+  // Header
   &__header {
     display:         flex;
     justify-content: space-between;
-    align-items:     center;
-    margin-bottom:   32px;
+    box-sizing:      border-box;
+
+    // Adjustments based on position
+    .vod--top &, .vod--bottom & {
+      flex-direction: row;
+      align-items:     center;
+      margin-bottom:   32px;
+      width: 100%;
+    }
+
+    .vod--bottom & {
+      margin-bottom: 0;
+      margin-top: 32px;
+    }
+
+    .vod--left &, .vod--right & {
+      flex-direction: column;
+      flex-shrink: 0;
+      width: 250px;
+      padding-right: 20px;
+    }
+
+    .vod--left & {
+      margin-right: 32px;
+      border-right: 1px solid var(--vod-border);
+    }
+
+    .vod--right & {
+      margin-left: 32px;
+      border-left: 1px solid var(--vod-border);
+      padding-right: 0;
+      padding-left: 20px;
+    }
   }
 
   &__range-label {
@@ -45,13 +83,13 @@
     letter-spacing: -0.01em;
   }
 
-  // ── Boutons preset ───────────────────────────────────────────────────────
+  // Preset buttons
   &__presets {
     display:       flex;
     gap:           4px;
     background:    var(--vod-surface);
     padding:       4px;
-    border-radius: calc(var(--vod-radius) * 0.5);
+    border-radius: 8px;
   }
 
   &__preset-btn {
@@ -79,20 +117,20 @@
     }
   }
 
-  // ── Zone slider ─────────────────────────────────────────────────────────
+  // Slider area
   &__slider-wrapper {
     position: relative;
     width:    100%;
     padding:  8px 16px 24px;
   }
 
-  // ── Info-bulle « N Jours » ───────────────────────────────────────────────
+  // "N Days" Tooltip
   &__tooltip {
     position:       absolute;
     top:            -8px;
     padding:        6px 12px;
-    background:     var(--vod-tooltip-bg);
-    color:          var(--vod-tooltip-text);
+    background:     var(--vod-tooltip-bg, #111827);
+    color:          var(--vod-tooltip-text, #ffffff);
     font-size:      12px;
     font-weight:    500;
     border-radius:  6px;
@@ -110,10 +148,10 @@
     transform:  translateX(-50%) rotate(45deg);
     width:      8px;
     height:     8px;
-    background: var(--vod-tooltip-bg);
+    background: var(--vod-tooltip-bg, #111827);
   }
 
-  // ── Piste principale ─────────────────────────────────────────────────────
+  // Main track
   &__track {
     position:    relative;
     width:       100%;
@@ -122,28 +160,23 @@
     user-select:  none;
     margin-top:   8px;
     cursor:       pointer;
-  }
 
-  &__track-inner {
-    position: absolute;
-    inset: 0;
-    // Graduation réactive via CSS
+    // Textured background with inline SVG (graduation)
     background-color: var(--vod-surface);
-    background-image: var(--vod-track-image, linear-gradient(to right, var(--vod-border) 1px, transparent 1px));
-    background-size: 40px 12px;
-    background-position: center bottom;
+    background-image: var(--vod-track-image, url('../assets/track.svg'));
     background-repeat: repeat-x;
-    border-radius: calc(var(--vod-radius) * 0.5);
+    background-position: center;
+    border-radius: 8px;
     overflow: hidden;
   }
 
-  // ── Zone active (plage sélectionnée) ────────────────────────────────────
+  // Active range (selected range)
   &__range {
     position: absolute;
     height:   100%;
     background:   var(--vod-range-bg, var(--vod-primary-light));
-    border-top:   2px solid var(--vod-range-border, var(--vod-primary-border));
-    border-bottom: 2px solid var(--vod-range-border, var(--vod-primary-border));
+    border-top:   var(--vod-range-border-thickness) solid var(--vod-range-border, var(--vod-primary-border));
+    border-bottom: var(--vod-range-border-thickness) solid var(--vod-range-border, var(--vod-primary-border));
     backdrop-filter: saturate(1.2);
     cursor:  grab;
     transition: background 0.1s;
@@ -151,7 +184,7 @@
     &--dragging { cursor: grabbing; }
   }
 
-  // ── Bordure décorative par-dessus la piste ───────────────────────────────
+  // Decorative border over the track
   &__track-border {
     position:       absolute;
     inset:          0;
@@ -160,7 +193,7 @@
     pointer-events: none;
   }
 
-  // ── Poignées (thumbs) ────────────────────────────────────────────────────
+  // Handles (thumbs)
   &__thumb {
     position: absolute;
     top:      50%;
@@ -171,43 +204,31 @@
 
     &:focus { outline: none; }
 
-    &:hover, &:focus {
-      .vod__thumb-handle {
-        transform: translate(-50%, -50%) scale(1.15);
-      }
+    // Visual of the handle via ::after
+    &::after {
+      content:    '';
+      position:   absolute;
+      top:        50%;
+      left:       50%;
+      transform:  translate(-50%, -50%);
+      width:      20px;
+      height:     32px;
+      // Inline SVG handle (two vertical lines)
+      background-image: url('../assets/thumb.svg');
+      background-repeat:   no-repeat;
+      background-position: center;
+      background-size:     contain;
+      filter:     drop-shadow(0 1px 3px rgba(0,0,0,0.15));
+      transition: transform 0.15s ease-out;
+    }
+
+    &:hover::after,
+    &:focus::after {
+      transform: translate(-50%, -50%) scale(1.15);
     }
   }
 
-  // Le visuel par défaut de la poignée
-  &__thumb-handle {
-    position:   absolute;
-    top:        50%;
-    left:       50%;
-    transform:  translate(-50%, -50%);
-    width:      18px;
-    height:     30px;
-    background: var(--vod-bg);
-    border:     1.5px solid var(--vod-primary); // Réactif !
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.15s ease-out, border-color 0.15s;
-
-    // Les deux petites barres verticales au centre
-    &::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 4px;
-      height: 12px;
-      border-left: 1.5px solid var(--vod-primary);
-      border-right: 1.5px solid var(--vod-primary);
-      opacity: 0.6;
-    }
-  }
-
-  // ── Étiquettes des mois ──────────────────────────────────────────────────
+  // Month labels
   &__months {
     position:   relative;
     width:      100%;

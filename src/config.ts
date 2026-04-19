@@ -43,6 +43,7 @@ export interface OwldateConfig {
     rangeBorder?: string;
     rangeBackground?: string;
     trackImage?: string;
+    rangeBorderThickness?: string;
   };
 }
 
@@ -52,6 +53,7 @@ export const config = reactive<OwldateConfig>({
   darkMode: false,
   headerPosition: 'top',
   theme: {
+    rangeBorderThickness: '2px',
   },
 });
 

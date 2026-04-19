@@ -1,7 +1,7 @@
 <template>
-  <div id="test" :class="['vod', 'vod--' + config.headerPosition]" :style="themeStyles">
+  <div id="vue-owl-picker" :class="['vod', 'vod--' + config.headerPosition]" :style="themeStyles">
 
-    <!-- ── En-tête : plage affichée + raccourcis ── -->
+    <!-- Header: displayed range + shortcuts -->
     <div class="vod__header">
       <span class="vod__range-label">{{ formattedRangeString }}</span>
 
@@ -18,10 +18,10 @@
       </div>
     </div>
 
-    <!-- ── Zone du slider ── -->
+    <!-- Slider area -->
     <div class="vod__slider-wrapper">
 
-      <!-- Info-bulle flottante « N Jours » -->
+      <!-- Tooltip for the number of days -->
       <div
         v-if="durationInDays > 0"
         class="vod__tooltip"
@@ -31,10 +31,10 @@
         <span class="vod__tooltip-caret" />
       </div>
 
-      <!-- Piste (Track) -->
+      <!-- Track -->
       <div class="vod__track" ref="sliderTrackRef" @pointerdown="onPointerDownTrack">
 
-        <!-- Zone active (plage bleue) -->
+        <!-- Active range -->
         <div
           class="vod__range"
           :class="{ 'vod__range--dragging': dragState.type === 'range' }"
@@ -42,10 +42,10 @@
           @pointerdown="onPointerDownRange"
         />
 
-        <!-- Bordure décorative par-dessus la piste -->
+        <!-- Decorative border over the track -->
         <div class="vod__track-border" />
 
-        <!-- Poignée gauche -->
+        <!-- Left handle -->
         <div
           class="vod__thumb vod__thumb--left"
           :style="{ left: `${startPercent}%` }"
@@ -55,7 +55,7 @@
           @pointerdown="onPointerDownLeft"
         />
 
-        <!-- Poignée droite -->
+        <!-- Right handle -->
         <div
           class="vod__thumb vod__thumb--right"
           :style="{ left: `${endPercent}%` }"
@@ -66,7 +66,7 @@
         />
       </div>
 
-      <!-- Étiquettes des mois -->
+      <!-- Month labels -->
       <div class="vod__months">
         <span
           v-for="month in months"
@@ -90,81 +90,84 @@ import { DateAdapter } from '../utils/date-adapter'
 import config from '../config'
 
 const themeStyles = computed(() => {
-  const t = config.theme
+  const theme = config.theme
   return {
-    '--vod-primary': t.primary,
-    '--vod-bg': t.background,
-    '--vod-surface': t.surface,
-    '--vod-border': t.border,
-    '--vod-text': t.text,
-    '--vod-text-muted': t.textMuted,
-    '--vod-radius': t.radius,
-    '--vod-font': t.font,
-    '--vod-tooltip-bg': t.tooltipBg,
-    '--vod-tooltip-text': t.tooltipText,
-    '--vod-range-border': t.rangeBorder,
-    '--vod-range-bg': t.rangeBackground,
-    '--vod-track-image': t.trackImage,
+    '--vod-primary': theme.primary,
+    '--vod-bg': theme.background,
+    '--vod-surface': theme.surface,
+    '--vod-border': theme.border,
+    '--vod-text': theme.text,
+    '--vod-text-muted': theme.textMuted,
+    '--vod-radius': theme.radius,
+    '--vod-font': theme.font,
+    '--vod-tooltip-bg': theme.tooltipBg,
+    '--vod-tooltip-text': theme.tooltipText,
+    '--vod-range-border': theme.rangeBorder,
+    '--vod-range-bg': theme.rangeBackground,
+    '--vod-track-image': theme.trackImage,
+    '--vod-range-border-thickness': theme.rangeBorderThickness ,
   }
 })
 
-// ─── v-model ───────────────────────────────────────────────────────────────
 const selected = defineModel<DateRange>({ required: true })
 
-// ─── Constantes & bornes temporelles ───────────────────────────────────────
+// -- Constants & time bounds --
 const DAY_MS = 1000 * 60 * 60 * 24
 const currentYear = new Date().getFullYear()
 const minTimestamp = new Date(currentYear, 0, 1).getTime()
 const maxTimestamp = new Date(currentYear, 11, 31).getTime()
 
-// ─── État local (tableau [startTs, endTs]) ──────────────────────────────────
-// On utilise shallowRef car on remplace toujours le tableau entier
+// -- Local state (array [startTimestamp, endTimestamp]) --
 const localValue = shallowRef<[number, number]>([
   DateAdapter.toTimestamp(selected.value?.start) ?? minTimestamp,
   DateAdapter.toTimestamp(selected.value?.end) ?? maxTimestamp,
 ])
 
-/**
- * Pousse les changements locaux vers le parent (v-model)
- */
-const emitChange = () => {
-  const [s, e] = localValue.value
-  
-  const currentS = DateAdapter.toTimestamp(selected.value?.start)
-  const currentE = DateAdapter.toTimestamp(selected.value?.end)
 
-  if (s !== currentS || e !== currentE) {
+const propagateChange = () => {
+  const [start, end] = localValue.value
+  
+  const currentStart = DateAdapter.toTimestamp(selected.value?.start)
+  const currentEnd = DateAdapter.toTimestamp(selected.value?.end)
+
+  if (start !== currentStart || end !== currentEnd) {
     selected.value = { 
-      start: DateAdapter.fromTimestamp(s), 
-      end: DateAdapter.fromTimestamp(e)
+      start: DateAdapter.fromTimestamp(start), 
+      end: DateAdapter.fromTimestamp(end)
     }
   }
 }
 
-// Synchronisation entrante : si le parent change selected, on met à jour localValue
-watch(selected, (v) => {
-  if (!v) return
-  const sTs = DateAdapter.toTimestamp(v.start) ?? minTimestamp
-  const eTs = DateAdapter.toTimestamp(v.end) ?? maxTimestamp
-  // On ne met à jour localValue QUE si les timestamps diffèrent réellement
-  if (sTs !== localValue.value[0] || eTs !== localValue.value[1]) {
-    localValue.value = [sTs, eTs]
+// -- Synchronization between owl-date-picker and its parent --
+watch(selected, (value) => {
+  if (!value) {
+    return
+  }
+  const startTimestamp = DateAdapter.toTimestamp(value.start) ?? minTimestamp
+  const endTimestamp   = DateAdapter.toTimestamp(value.end) ?? maxTimestamp
+  // Update localValue ONLY if timestamps are different
+  if (startTimestamp !== localValue.value[0] || endTimestamp !== localValue.value[1]) {
+    localValue.value = [startTimestamp, endTimestamp]
   }
 }, { deep: true })
 
-// ─── Positions en % sur la piste ───────────────────────────────────────────
-const startPercent = computed(() => getPercentageForTimestamp(localValue.value[0]))
-const endPercent   = computed(() => getPercentageForTimestamp(localValue.value[1]))
+// -- Percentage positions on the track --
+const startPercent = computed(() => {
+  return getPercentageForTimestamp(localValue.value[0])
+})
+const endPercent = computed(() => {
+  return getPercentageForTimestamp(localValue.value[1])
+})
 
-const durationInDays = computed(() =>
-  Math.max(1, Math.round((localValue.value[1] - localValue.value[0]) / DAY_MS))
-)
+const durationInDays = computed(() => {
+  return Math.max(1, Math.round((localValue.value[1] - localValue.value[0]) / DAY_MS))
+})
 
-const centerOfRangePercentage = computed(() =>
-  getPercentageForTimestamp((localValue.value[0] + localValue.value[1]) / 2)
-)
+const centerOfRangePercentage = computed(() => {
+  return getPercentageForTimestamp((localValue.value[0] + localValue.value[1]) / 2)
+})
 
-// ─── Raccourcis (Presets) ───────────────────────────────────────────────────
+// -- Shortcuts (Presets) --
 const activePreset = ref<string | null>(null)
 
 const presets: DateRangePreset[] = [
@@ -208,38 +211,47 @@ const applyPreset = (preset: DateRangePreset) => {
     Math.max(minTimestamp, start),
     Math.min(maxTimestamp, end),
   ]
-  emitChange()
+  propagateChange()
 }
 
-// Réinitialise le preset actif si l'utilisateur déplace manuellement les poignées
+// Reset active preset if user manually moves handles
 watch(localValue, (newVal) => {
-  if (!activePreset.value) return
+  if (!activePreset.value) {
+    return
+  }
   const preset = presets.find(p => p.label === activePreset.value)
-  if (!preset) return
-  const [s, e] = preset.getRange()
+  if (!preset) {
+    return
+  }
+  const [start, end] = preset.getRange()
   const tolerance = DAY_MS * 2
   if (
-    Math.abs(newVal[0] - Math.max(minTimestamp, s)) > tolerance ||
-    Math.abs(newVal[1] - Math.min(maxTimestamp, e)) > tolerance
+    Math.abs(newVal[0] - Math.max(minTimestamp, start)) > tolerance ||
+    Math.abs(newVal[1] - Math.min(maxTimestamp, end)) > tolerance
   ) {
     activePreset.value = null
   }
 })
 
-// ─── Formatage ──────────────────────────────────────────────────────────────
+// -- Formatting --
 const formattedRangeString = computed(() => {
   const start = DateAdapter.fromTimestamp(localValue.value[0])
   const end = DateAdapter.fromTimestamp(localValue.value[1])
-  if (!start || !end) return ''
+  if (!start || !end) {
+    return ''
+  }
   return DateAdapter.formatRange(start, end)
 })
 
-const getPercentageForTimestamp = (ts: number): number =>
-  ((ts - minTimestamp) / (maxTimestamp - minTimestamp)) * 100
+const getPercentageForTimestamp = (timestamp: number): number => {
+  return ((timestamp - minTimestamp) / (maxTimestamp - minTimestamp)) * 100
+}
 
-const months = computed(() => DateAdapter.getYearMonths(currentYear))
+const months = computed(() => {
+  return DateAdapter.getYearMonths(currentYear)
+})
 
-// ─── Drag & Drop (aucune dépendance externe) ────────────────────────────────
+// -- Drag & Drop (no external dependencies) --
 const sliderTrackRef = ref<HTMLElement | null>(null)
 
 const dragState = ref<{
@@ -248,11 +260,14 @@ const dragState = ref<{
   initialValue: [number, number]
 }>({ type: null, startX: 0, initialValue: [0, 0] })
 
-const snapToDay = (ts: number): number =>
-  minTimestamp + Math.round((ts - minTimestamp) / DAY_MS) * DAY_MS
+const snapToDay = (timestamp: number): number => {
+  return minTimestamp + Math.round((timestamp - minTimestamp) / DAY_MS) * DAY_MS
+}
 
 const startDrag = (type: 'left' | 'right' | 'range', event: PointerEvent) => {
-  if (event.button !== 0) return
+  if (event.button !== 0) {
+    return
+  }
   event.preventDefault()
   event.stopPropagation()
   dragState.value = { type, startX: event.clientX, initialValue: [...localValue.value] }
@@ -261,48 +276,58 @@ const startDrag = (type: 'left' | 'right' | 'range', event: PointerEvent) => {
   window.addEventListener('pointercancel', onPointerUp)
 }
 
-const onPointerDownLeft  = (e: PointerEvent) => startDrag('left', e)
-const onPointerDownRight = (e: PointerEvent) => startDrag('right', e)
-const onPointerDownRange = (e: PointerEvent) => startDrag('range', e)
+const onPointerDownLeft  = (event: PointerEvent) => {
+  return startDrag('left', event)
+}
+const onPointerDownRight = (event: PointerEvent) => {
+  return startDrag('right', event)
+}
+const onPointerDownRange = (event: PointerEvent) => {
+  return startDrag('range', event)
+}
 
-/** Clic direct sur la piste : aspire la poignée la plus proche */
-const onPointerDownTrack = (e: PointerEvent) => {
-  if (e.button !== 0 || !sliderTrackRef.value) return
-  e.preventDefault()
+/** Direct click on the track: snaps to the nearest handle */
+const onPointerDownTrack = (event: PointerEvent) => {
+  if (event.button !== 0 || !sliderTrackRef.value) {
+    return
+  }
+  event.preventDefault()
 
   const rect = sliderTrackRef.value.getBoundingClientRect()
-  const clickPercent = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100))
-  const clickTs = snapToDay(minTimestamp + (clickPercent / 100) * (maxTimestamp - minTimestamp))
+  const clickPercent = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100))
+  const clickTimestamp = snapToDay(minTimestamp + (clickPercent / 100) * (maxTimestamp - minTimestamp))
 
-  const distLeft  = Math.abs(clickTs - localValue.value[0])
-  const distRight = Math.abs(clickTs - localValue.value[1])
+  const distLeft  = Math.abs(clickTimestamp - localValue.value[0])
+  const distRight = Math.abs(clickTimestamp - localValue.value[1])
 
   if (distLeft <= distRight) {
-    localValue.value = [Math.min(clickTs, localValue.value[1] - DAY_MS), localValue.value[1]]
-    emitChange()
-    startDrag('left', e)
+    localValue.value = [Math.min(clickTimestamp, localValue.value[1] - DAY_MS), localValue.value[1]]
+    propagateChange()
+    startDrag('left', event)
   } else {
-    localValue.value = [localValue.value[0], Math.max(clickTs, localValue.value[0] + DAY_MS)]
-    emitChange()
-    startDrag('right', e)
+    localValue.value = [localValue.value[0], Math.max(clickTimestamp, localValue.value[0] + DAY_MS)]
+    propagateChange()
+    startDrag('right', event)
   }
 }
 
 const onPointerMove = (event: PointerEvent) => {
-  if (!dragState.value.type || !sliderTrackRef.value) return
+  if (!dragState.value.type || !sliderTrackRef.value) {
+    return
+  }
 
   const rect        = sliderTrackRef.value.getBoundingClientRect()
-  const shiftTs     = ((event.clientX - dragState.value.startX) / rect.width) * (maxTimestamp - minTimestamp)
+  const shiftTimestamp     = ((event.clientX - dragState.value.startX) / rect.width) * (maxTimestamp - minTimestamp)
 
   let [newStart, newEnd] = dragState.value.initialValue
 
   if (dragState.value.type === 'left') {
-    newStart = Math.max(minTimestamp, Math.min(newEnd - DAY_MS, snapToDay(newStart + shiftTs)))
+    newStart = Math.max(minTimestamp, Math.min(newEnd - DAY_MS, snapToDay(newStart + shiftTimestamp)))
   } else if (dragState.value.type === 'right') {
-    newEnd = Math.min(maxTimestamp, Math.max(newStart + DAY_MS, snapToDay(newEnd + shiftTs)))
+    newEnd = Math.min(maxTimestamp, Math.max(newStart + DAY_MS, snapToDay(newEnd + shiftTimestamp)))
   } else {
-    // Déplacement du bloc entier
-    const shiftDays = Math.round(shiftTs / DAY_MS)
+    // Move the entire range block
+    const shiftDays = Math.round(shiftTimestamp / DAY_MS)
     const duration  = newEnd - newStart
     let targetStart = newStart + shiftDays * DAY_MS
     let targetEnd   = newEnd   + shiftDays * DAY_MS
@@ -316,7 +341,7 @@ const onPointerMove = (event: PointerEvent) => {
 
   if (newStart !== localValue.value[0] || newEnd !== localValue.value[1]) {
     localValue.value = [newStart, newEnd]
-    emitChange()
+    propagateChange()
   }
 }
 
@@ -327,258 +352,8 @@ const onPointerUp = () => {
   window.removeEventListener('pointercancel', onPointerUp)
 }
 
-// Nettoyage en cas de démontage pour éviter les fuites mémoire
+// Cleanup on unmount to prevent memory leaks
 onBeforeUnmount(onPointerUp)
 </script>
 
-<style lang="scss">
-// ─── Variables CSS du composant ─────────────────────────────────────────────
-// Surchargeables par l'utilisateur depuis l'extérieur via :root { --vod-primary: ... }
-:root {
-  --vod-primary:        #6366f1;      // indigo-500
-  --vod-primary-light:  rgba(99, 102, 241, 0.12);
-  --vod-primary-border: rgba(99, 102, 241, 0.40);
-  --vod-bg:             #ffffff;
-  --vod-surface:        #f9fafb;
-  --vod-border:         #e5e7eb;
-  --vod-text:           #1f2937;
-  --vod-text-muted:     #9ca3af;
-  --vod-radius:         16px;
-  --vod-font:           system-ui, -apple-system, 'Segoe UI', sans-serif;
-}
-
-#test {
-  display: flex;
-}
-
-// ─── Racine du composant ─────────────────────────────────────────────────────
-.vod {
-  font-family:     var(--vod-font);
-  background:      var(--vod-bg);
-  border:          1px solid var(--vod-border);
-  border-radius:   var(--vod-radius);
-  box-shadow:      0 1px 3px rgba(0, 0, 0, 0.06);
-  padding:         20px;
-  width:           100%;
-  min-width:       600px;
-  box-sizing:      border-box;
-  display: flex;
-  transition: all 0.3s ease;
-
-  // ── Modificateurs de disposition ──
-  &--top    { flex-direction: column; }
-  &--bottom { flex-direction: column-reverse; }
-  &--left   { flex-direction: row; align-items: stretch; }
-  &--right  { flex-direction: row-reverse; align-items: stretch; }
-
-  // ── En-tête ─────────────────────────────────────────────────────────────
-  &__header {
-    display:         flex;
-    justify-content: space-between;
-    box-sizing:      border-box;
-
-    // Ajustements selon la position
-    .vod--top &, .vod--bottom & {
-      flex-direction: row;
-      align-items:     center;
-      margin-bottom:   32px;
-      width: 100%;
-    }
-
-    .vod--bottom & {
-      margin-bottom: 0;
-      margin-top: 32px;
-    }
-
-    .vod--left &, .vod--right & {
-      flex-direction: column;
-      flex-shrink: 0;
-      width: 250px;
-      padding-right: 20px;
-    }
-
-    .vod--left & {
-      margin-right: 32px;
-      border-right: 1px solid var(--vod-border);
-    }
-
-    .vod--right & {
-      margin-left: 32px;
-      border-left: 1px solid var(--vod-border);
-      padding-right: 0;
-      padding-left: 20px;
-    }
-  }
-
-  &__range-label {
-    font-size:   14px;
-    font-weight: 600;
-    color:       var(--vod-text);
-    letter-spacing: -0.01em;
-  }
-
-  // ── Boutons preset ───────────────────────────────────────────────────────
-  &__presets {
-    display:       flex;
-    gap:           4px;
-    background:    var(--vod-surface);
-    padding:       4px;
-    border-radius: 8px;
-  }
-
-  &__preset-btn {
-    padding:       6px 12px;
-    font-size:     12px;
-    font-weight:   500;
-    border:        none;
-    background:    transparent;
-    color:         var(--vod-text-muted);
-    border-radius: 6px;
-    cursor:        pointer;
-    transition:    background 0.15s, color 0.15s, box-shadow 0.15s;
-    font-family:   inherit;
-
-    &:hover {
-      background: rgba(156, 163, 175, 0.25);
-      color:      var(--vod-text);
-    }
-
-    &--active {
-      background:  var(--vod-bg);
-      color:       var(--vod-text);
-      box-shadow:  0 1px 3px rgba(0, 0, 0, 0.10);
-      border:      1px solid rgba(229, 231, 235, 0.8);
-    }
-  }
-
-  // ── Zone slider ─────────────────────────────────────────────────────────
-  &__slider-wrapper {
-    position: relative;
-    width:    100%;
-    padding:  8px 16px 24px;
-  }
-
-  // ── Info-bulle « N Jours » ───────────────────────────────────────────────
-  &__tooltip {
-    position:       absolute;
-    top:            -8px;
-    padding:        6px 12px;
-    background:     var(--vod-tooltip-bg, #111827);
-    color:          var(--vod-tooltip-text, #ffffff);
-    font-size:      12px;
-    font-weight:    500;
-    border-radius:  6px;
-    white-space:    nowrap;
-    pointer-events: none;
-    transform:      translateX(-50%);
-    z-index:        10;
-    transition:     left 0.08s ease;
-  }
-
-  &__tooltip-caret {
-    position:   absolute;
-    bottom:     -4px;
-    left:       50%;
-    transform:  translateX(-50%) rotate(45deg);
-    width:      8px;
-    height:     8px;
-    background: var(--vod-tooltip-bg, #111827);
-  }
-
-  // ── Piste principale ─────────────────────────────────────────────────────
-  &__track {
-    position:    relative;
-    width:       100%;
-    height:      40px;
-    touch-action: none;
-    user-select:  none;
-    margin-top:   8px;
-    cursor:       pointer;
-
-    // Fond texturé en SVG inline (graduation)
-    background-color: var(--vod-surface);
-    background-image: var(--vod-track-image, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cline x1='20' y1='28' x2='20' y2='40' stroke='%23d1d5db' stroke-width='1'/%3E%3C/svg%3E"));
-    background-repeat: repeat-x;
-    background-position: center;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  // ── Zone active (plage sélectionnée) ────────────────────────────────────
-  &__range {
-    position: absolute;
-    height:   100%;
-    background:   var(--vod-range-bg, var(--vod-primary-light));
-    border-top:   2px solid var(--vod-range-border, var(--vod-primary-border));
-    border-bottom: 2px solid var(--vod-range-border, var(--vod-primary-border));
-    backdrop-filter: saturate(1.2);
-    cursor:  grab;
-    transition: background 0.1s;
-
-    &--dragging { cursor: grabbing; }
-  }
-
-  // ── Bordure décorative par-dessus la piste ───────────────────────────────
-  &__track-border {
-    position:       absolute;
-    inset:          0;
-    border:         1px solid var(--vod-border);
-    border-radius:  8px;
-    pointer-events: none;
-  }
-
-  // ── Poignées (thumbs) ────────────────────────────────────────────────────
-  &__thumb {
-    position: absolute;
-    top:      50%;
-    width:    0;
-    height:   0;
-    cursor:   ew-resize;
-    z-index:  10;
-
-    &:focus { outline: none; }
-
-    // Le visuel de la poignée via ::after
-    &::after {
-      content:    '';
-      position:   absolute;
-      top:        50%;
-      left:       50%;
-      transform:  translate(-50%, -50%);
-      width:      20px;
-      height:     32px;
-      // Poignée SVG inline (deux lignes verticales)
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='32' viewBox='0 0 20 32'%3E%3Crect x='0' y='0' width='20' height='32' rx='4' fill='white' stroke='%23d1d5db' stroke-width='1.5'/%3E%3Cline x1='7' y1='10' x2='7' y2='22' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='13' y1='10' x2='13' y2='22' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat:   no-repeat;
-      background-position: center;
-      background-size:     contain;
-      filter:     drop-shadow(0 1px 3px rgba(0,0,0,0.15));
-      transition: transform 0.15s ease-out;
-    }
-
-    &:hover::after,
-    &:focus::after {
-      transform: translate(-50%, -50%) scale(1.15);
-    }
-  }
-
-  // ── Étiquettes des mois ──────────────────────────────────────────────────
-  &__months {
-    position:   relative;
-    width:      100%;
-    height:     16px;
-    margin-top: 12px;
-  }
-
-  &__month-label {
-    position:       absolute;
-    font-size:      11px;
-    color:          var(--vod-text-muted);
-    font-weight:    500;
-    text-transform: capitalize;
-    pointer-events: none;
-    transform:      translateX(-50%);
-    white-space:    nowrap;
-  }
-}
-</style>
+<style lang="scss" src="./OwlDatePicker.scss"></style>

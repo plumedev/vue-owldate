@@ -11,33 +11,37 @@ export class DateAdapter {
    * Converts a date value into a numeric timestamp (ms).
    */
   static toTimestamp(val: DateValue | undefined | null): number | null {
-    if (!val) return null
+    if (!val) {
+      return null
+    }
     
-    let ts: number
+    let timestamp: number
     if (val instanceof Date) {
-       ts = val.getTime()
+       timestamp = val.getTime()
     } else if (val instanceof Temporal.PlainDate) {
-       ts = val.toZonedDateTime('UTC').epochMilliseconds
+       timestamp = val.toZonedDateTime('UTC').epochMilliseconds
     } else if (val instanceof Temporal.ZonedDateTime) {
-       ts = val.epochMilliseconds
+       timestamp = val.epochMilliseconds
     } else {
        return null
     }
 
-    return isNaN(ts) ? null : ts
+    return isNaN(timestamp) ? null : timestamp
   }
 
   /**
    * Converts a numeric timestamp (ms) back to the configured DateValue type.
    */
-  static fromTimestamp(ts: number | null): DateValue | null {
-    if (ts === null || isNaN(ts)) return null
-
-    if (!config.useTemporal) {
-      return new Date(ts)
+  static fromTimestamp(timestamp: number | null): DateValue | null {
+    if (timestamp === null || isNaN(timestamp)) {
+      return null
     }
 
-    const instant = Temporal.Instant.fromEpochMilliseconds(ts)
+    if (!config.useTemporal) {
+      return new Date(timestamp)
+    }
+
+    const instant = Temporal.Instant.fromEpochMilliseconds(timestamp)
     if (config.temporalType === 'ZonedDateTime') {
       return instant.toZonedDateTimeISO(Temporal.Now.timeZoneId())
     }
@@ -70,7 +74,9 @@ export class DateAdapter {
      const today = new Date()
      
      const df = new Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric' })
-     const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+     const capitalize = (s: string) => {
+       return s.charAt(0).toUpperCase() + s.slice(1)
+     }
      
      const endStr = endDate.toDateString() === today.toDateString()
        ? "Aujourd'hui"
