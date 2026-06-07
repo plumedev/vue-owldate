@@ -18,5 +18,6 @@ export { default as OwlDatePicker } from './components/OwlDatePicker.vue'
 // Public types 
 export type { DateRange, DateRangePreset, OwlDatePickerProps } from './types'
 export type { OwldateConfig } from './config'
+export { default as config } from './config'
 
 export default VueOwldate

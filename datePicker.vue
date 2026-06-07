@@ -59,9 +59,14 @@
           class="absolute top-1/2 w-0 h-0 cursor-ew-resize focus:outline-none after:content-[''] after:absolute after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:bg-[url('@/assets/graduation-thumb.svg')] after:bg-no-repeat after:bg-center after:bg-contain after:w-[20px] after:h-[32px] after:transition-transform after:duration-[150ms] after:ease-out hover:after:scale-[1.15] focus:after:scale-[1.15] z-10"
           :style="{ left: startPercent + '%' }"
           @pointerdown="onPointerDownLeft"
+          @keydown="onKeyDownLeft"
           role="slider"
           tabindex="0"
           aria-label="Date de début"
+          :aria-valuenow="Math.round(startPercent)"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          :aria-valuetext="formatAriaDate(localValue[0])"
         ></div>
 
         <!-- Poignée droite -->
@@ -69,9 +74,14 @@
           class="absolute top-1/2 w-0 h-0 cursor-ew-resize focus:outline-none after:content-[''] after:absolute after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:bg-[url('@/assets/graduation-thumb.svg')] after:bg-no-repeat after:bg-center after:bg-contain after:w-[20px] after:h-[32px] after:transition-transform after:duration-[150ms] after:ease-out hover:after:scale-[1.15] focus:after:scale-[1.15] z-10"
           :style="{ left: endPercent + '%' }"
           @pointerdown="onPointerDownRight"
+          @keydown="onKeyDownRight"
           role="slider"
           tabindex="0"
           aria-label="Date de fin"
+          :aria-valuenow="Math.round(endPercent)"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          :aria-valuetext="formatAriaDate(localValue[1])"
         ></div>
       </div>
       
@@ -310,6 +320,33 @@ const onPointerUp = () => {
   window.removeEventListener('pointermove', onPointerMove);
   window.removeEventListener('pointerup', onPointerUp);
   window.removeEventListener('pointercancel', onPointerUp);
+};
+
+const formatAriaDate = (ts: number) => {
+  const d = new Date(ts);
+  return new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+};
+
+const onKeyDownLeft = (e: KeyboardEvent) => {
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    const direction = (e.key === 'ArrowLeft' || e.key === 'ArrowDown') ? -1 : 1;
+    let newStart = localValue.value[0] + direction * dayInMilliseconds;
+    newStart = snapToDay(newStart);
+    newStart = Math.max(minTimestamp, Math.min(localValue.value[1] - dayInMilliseconds, newStart));
+    localValue.value = [newStart, localValue.value[1]];
+  }
+};
+
+const onKeyDownRight = (e: KeyboardEvent) => {
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    const direction = (e.key === 'ArrowLeft' || e.key === 'ArrowDown') ? -1 : 1;
+    let newEnd = localValue.value[1] + direction * dayInMilliseconds;
+    newEnd = snapToDay(newEnd);
+    newEnd = Math.min(maxTimestamp, Math.max(localValue.value[0] + dayInMilliseconds, newEnd));
+    localValue.value = [localValue.value[0], newEnd];
+  }
 };
 
 // Nettoyage de l'événement en cas de démontage composant pour fuites mémoire

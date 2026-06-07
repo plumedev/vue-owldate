@@ -1,5 +1,5 @@
 <template>
-  <div id="vue-owl-picker" :class="['vod', 'vod--' + config.headerPosition]" :style="themeStyles">
+  <div id="vue-owl-picker" :class="['vod', 'vod--' + config.headerPosition, { 'vod--dark': config.darkMode }]" :style="themeStyles">
 
     <!-- Header: displayed range + shortcuts -->
     <div class="vod__header">
@@ -52,7 +52,12 @@
           role="slider"
           tabindex="0"
           aria-label="Date de début"
+          :aria-valuenow="Math.round(startPercent)"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          :aria-valuetext="formatAriaDate(localValue[0])"
           @pointerdown="onPointerDownLeft"
+          @keydown="onKeyDownLeft"
         />
 
         <!-- Right handle -->
@@ -62,7 +67,12 @@
           role="slider"
           tabindex="0"
           aria-label="Date de fin"
+          :aria-valuenow="Math.round(endPercent)"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          :aria-valuetext="formatAriaDate(localValue[1])"
           @pointerdown="onPointerDownRight"
+          @keydown="onKeyDownRight"
         />
       </div>
 
@@ -350,6 +360,35 @@ const onPointerUp = () => {
   window.removeEventListener('pointermove', onPointerMove)
   window.removeEventListener('pointerup', onPointerUp)
   window.removeEventListener('pointercancel', onPointerUp)
+}
+
+const formatAriaDate = (timestamp: number) => {
+  const d = new Date(timestamp)
+  return new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(d)
+}
+
+const onKeyDownLeft = (e: KeyboardEvent) => {
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    e.preventDefault()
+    const direction = (e.key === 'ArrowLeft' || e.key === 'ArrowDown') ? -1 : 1
+    let newStart = localValue.value[0] + direction * DAY_MS
+    newStart = snapToDay(newStart)
+    newStart = Math.max(minTimestamp, Math.min(localValue.value[1] - DAY_MS, newStart))
+    localValue.value = [newStart, localValue.value[1]]
+    propagateChange()
+  }
+}
+
+const onKeyDownRight = (e: KeyboardEvent) => {
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    e.preventDefault()
+    const direction = (e.key === 'ArrowLeft' || e.key === 'ArrowDown') ? -1 : 1
+    let newEnd = localValue.value[1] + direction * DAY_MS
+    newEnd = snapToDay(newEnd)
+    newEnd = Math.min(maxTimestamp, Math.max(localValue.value[0] + DAY_MS, newEnd))
+    localValue.value = [localValue.value[0], newEnd]
+    propagateChange()
+  }
 }
 
 // Cleanup on unmount to prevent memory leaks

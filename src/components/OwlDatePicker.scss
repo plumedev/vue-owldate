@@ -1,8 +1,6 @@
 // Component CSS Variables
 :root {
   --vod-primary:        #8263f1;
-  --vod-primary-light:  color-mix(in srgb, var(--vod-primary), transparent 88%);
-  --vod-primary-border: color-mix(in srgb, var(--vod-primary), transparent 60%);
   --vod-bg:             #ffffff;
   --vod-surface:        #f9fafb;
   --vod-border:         #e5e7eb;
@@ -19,6 +17,8 @@
 
 // Component root
 .vod {
+  --vod-primary-light:  color-mix(in srgb, var(--vod-primary), transparent 88%);
+  --vod-primary-border: color-mix(in srgb, var(--vod-primary), transparent 60%);
   font-family:     var(--vod-font);
   background:      var(--vod-bg);
   border:          1px solid var(--vod-border);
@@ -36,6 +36,17 @@
   &--bottom { flex-direction: column-reverse; }
   &--left   { flex-direction: row; align-items: stretch; }
   &--right  { flex-direction: row-reverse; align-items: stretch; }
+
+  // Dark mode
+  &--dark {
+    --vod-bg:             #09090b;
+    --vod-surface:        #18181b;
+    --vod-border:         #27272a;
+    --vod-text:           #fafafa;
+    --vod-text-muted:     #71717a;
+    --vod-tooltip-bg:     #27272a;
+    --vod-tooltip-text:   #fafafa;
+  }
 
   // Header
   &__header {
