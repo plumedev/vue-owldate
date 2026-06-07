@@ -39,7 +39,7 @@
           class="vod__range"
           :class="{ 'vod__range--dragging': dragState.type === 'range' }"
           :style="{ left: `${startPercent}%`, width: `${endPercent - startPercent}%` }"
-          @pointerdown="onPointerDownRange"
+          @pointerdown="handlePointerDown($event, 'range')"
         />
 
         <!-- Decorative border over the track -->
@@ -48,6 +48,7 @@
         <!-- Left handle -->
         <div
           class="vod__thumb vod__thumb--left"
+          :class="{ 'vod__thumb--narrow': isNarrow }"
           :style="{ left: `${startPercent}%` }"
           role="slider"
           tabindex="0"
@@ -56,13 +57,14 @@
           aria-valuemin="0"
           aria-valuemax="100"
           :aria-valuetext="formatAriaDate(localValue[0])"
-          @pointerdown="onPointerDownLeft"
+          @pointerdown="handlePointerDown($event, 'left')"
           @keydown="onKeyDownLeft"
         />
 
         <!-- Right handle -->
         <div
           class="vod__thumb vod__thumb--right"
+          :class="{ 'vod__thumb--narrow': isNarrow }"
           :style="{ left: `${endPercent}%` }"
           role="slider"
           tabindex="0"
@@ -71,7 +73,7 @@
           aria-valuemin="0"
           aria-valuemax="100"
           :aria-valuetext="formatAriaDate(localValue[1])"
-          @pointerdown="onPointerDownRight"
+          @pointerdown="handlePointerDown($event, 'right')"
           @keydown="onKeyDownRight"
         />
       </div>
@@ -171,6 +173,10 @@ const endPercent = computed(() => {
 
 const durationInDays = computed(() => {
   return Math.max(1, Math.round((localValue.value[1] - localValue.value[0]) / DAY_MS))
+})
+
+const isNarrow = computed(() => {
+  return durationInDays.value <= 4
 })
 
 const centerOfRangePercentage = computed(() => {
@@ -286,14 +292,42 @@ const startDrag = (type: 'left' | 'right' | 'range', event: PointerEvent) => {
   window.addEventListener('pointercancel', onPointerUp)
 }
 
-const onPointerDownLeft  = (event: PointerEvent) => {
-  return startDrag('left', event)
-}
-const onPointerDownRight = (event: PointerEvent) => {
-  return startDrag('right', event)
-}
-const onPointerDownRange = (event: PointerEvent) => {
-  return startDrag('range', event)
+const handlePointerDown = (event: PointerEvent, defaultType: 'left' | 'right' | 'range') => {
+  if (event.button !== 0 || !sliderTrackRef.value) {
+    return
+  }
+  event.preventDefault()
+  event.stopPropagation()
+
+  const rect = sliderTrackRef.value.getBoundingClientRect()
+  const clickX = event.clientX
+
+  // Get pixel positions of left and right thumbs
+  const leftPercent = getPercentageForTimestamp(localValue.value[0])
+  const rightPercent = getPercentageForTimestamp(localValue.value[1])
+  const leftX = rect.left + (leftPercent / 100) * rect.width
+  const rightX = rect.left + (rightPercent / 100) * rect.width
+
+  // Range width in pixels
+  const rangeWidthPx = rightX - leftX
+
+  // If the range width is very narrow (overlapping thumbs), resolve drag target based on click position
+  if (rangeWidthPx < 28) {
+    const midX = (leftX + rightX) / 2
+    // If click is in the center of the narrow range, drag range itself
+    if (Math.abs(clickX - midX) < 10) {
+      return startDrag('range', event)
+    }
+    // Clicking left of center drags left handle, right of center drags right handle
+    if (clickX < midX) {
+      return startDrag('left', event)
+    } else {
+      return startDrag('right', event)
+    }
+  }
+
+  // Otherwise, drag the default clicked element type
+  return startDrag(defaultType, event)
 }
 
 /** Direct click on the track: snaps to the nearest handle */
